@@ -38,7 +38,7 @@
             </div>
             <hr>
             <ul class="nav flex-column nav-pills">
-                <li class="nav-item"><a class="nav-link active" href="#dashboard" data-bs-toggle="tab"><i class="fa-solid fa-chart-line me-2"></i>Tổng Overview</a></li>
+                <li class="nav-item"><a class="nav-link active" href="#dashboard" data-bs-toggle="tab"><i class="fa-solid fa-chart-line me-2"></i>Tổng Quan</a></li>
                 <li class="nav-item"><a class="nav-link" href="#input-data" data-bs-toggle="tab"><i class="fa-solid fa-pen-to-square me-2"></i>Nhập Cốt Hằng Ngày</a></li>
                 <li class="nav-item"><a class="nav-link" href="#hydrology-table" data-bs-toggle="tab"><i class="fa-solid fa-table me-2"></i>Bảng Đường Đặc Tính</a></li>
             </ul>
@@ -106,7 +106,7 @@
                                         </div>
                                     </div>
                                     <div class="col-md-5">
-                                        <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-file-text me-1"></i> Nội dung tin nhắn (Định dạng chuẩn hóa):</h6>
+                                        <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-file-text me-1"></i> Nội dung tin nhắn (Định dạng tiếng Việt):</h6>
                                         <div id="quick-assessment" class="text-dark bg-light p-3 rounded mb-3 font-monospace fw-semibold" style="min-height: 160px; white-space: pre-line; font-size: 0.92rem; line-height: 1.6; border-left: 4px solid #198754; background-color: #f9fbf9 !important;">
                                             Nội dung tin nhắn báo cáo gửi sếp dạng danh sách có dấu sẽ tự động xuất hiện tại đây...
                                         </div>
@@ -386,7 +386,6 @@
         updateUI();
     };
 
-    // NÂNG CẤP ĐỒNG BỘ: ĐỔ DỮ LIỆU CÓ DẤU, XUỐNG DÒNG TỪNG HÀNG SANG KHUNG BÊN PHẢI GIỐNG XUYÊN MỘC
     function evaluateRowDelta(date) {
         selectedDateForReport = date;
         const currentIndex = waterData.findIndex(item => item.date === date);
@@ -431,10 +430,8 @@
             compareString2025 = "Chưa có dữ liệu cùng kỳ";
         }
 
-        // Đổ nội dung vào ô phân tích BÊN TRÁI
         document.getElementById('system-diagnostic-text').innerHTML = diagnosticHtml;
 
-        // ĐỔ NỘI DUNG CÓ DẤU CHUẨN CHỈNH, XUỐNG DÒNG TỪNG HÀNG VÀO Ô BÊN PHẢI (GIỐNG HỒ XUYÊN MỘC)
         let displayReportText = `- Vị trí kiểm tra: Hồ Kim Long\n`;
         displayReportText += `- Ngày báo cáo: ${formattedDate}\n`;
         displayReportText += `- Cốt kiểm tra: ${current.kimLong.toFixed(2)}m, dung tích tương ứng: ${currentVol.toLocaleString('vi-VN')}m³\n`;
@@ -442,8 +439,6 @@
         displayReportText += `- Người báo cáo: ${current.operator}`;
 
         document.getElementById('quick-assessment').innerText = displayReportText;
-
-        // Lưu text làm chuỗi dự phòng truyền nhận
         compiledReportText = displayReportText; 
     }
 
@@ -459,7 +454,6 @@
             return;
         }
 
-        // Zalo/Email giữ nguyên Tiếng Việt có dấu, riêng SMS mới chuyển đổi ép lọc không dấu
         let finalOutputText = compiledReportText;
         if(platform === 'sms') {
             finalOutputText = removeVietnameseTones(finalOutputText);
@@ -483,7 +477,6 @@
         }
     }
 
-    // CHỨC NĂNG CHÍNH: LƯU LỌC & ĐỒNG BỘ TRỰC TUYẾN HỒ KIM LONG LÊN GOOGLE SHEETS
     function addDailyRecord() {
         const date = document.getElementById('input-date-val').value;
         const operator = document.getElementById('input-operator-val').value.trim();
@@ -498,7 +491,14 @@
         const d = new Date(date);
         const formattedDateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 
-        // 1. Tạo gói dữ liệu chuẩn hóa gửi lên Cloud (Chỉ định chính xác Tab Kim_Long)
+        const targetIndex = waterData.findIndex(item => item.date === date);
+        if (targetIndex !== -1) {
+            const acceptOverwrite = confirm(`⚠️ CẢNH BÁO LỖI TRÙNG NGÀY:\nNgày [ ${formattedDateStr} ] đã có số liệu do [ ${waterData[targetIndex].operator} ] nhập.\n\nBạn có chắc chắn muốn GHI ĐÈ để cập nhật số liệu mới không?`);
+            if (!acceptOverwrite) {
+                return;
+            }
+        }
+
         const payloadCloud = {
             "tenHo": "Kim_Long", 
             "ngayNhap": formattedDateStr,
@@ -507,13 +507,11 @@
             "ghiChu": `Dung tích quy đổi: ${calculatedVolume.toLocaleString('vi-VN')} m³`
         };
 
-        // Khóa nút bấm tạo hiệu ứng loading chờ xử lý mạng
         const submitBtn = document.getElementById('btn-submit-form');
         const originalBtnText = submitBtn.innerHTML;
         submitBtn.disabled = true;
         submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> đang đồng bộ dữ liệu...`;
 
-        // 2. Chạy lệnh Fetch đẩy dữ liệu trực tuyến qua Cổng Google Apps Script
         fetch(GOOGLE_WEBAPP_URL, {
             method: "POST",
             mode: "no-cors",
@@ -521,8 +519,6 @@
             body: JSON.stringify(payloadCloud)
         })
         .then(() => {
-            // 3. Đẩy lên Cloud nhận thành công -> tiến hành cập nhật bộ nhớ offline LocalStorage
-            const targetIndex = waterData.findIndex(item => item.date === date);
             if (targetIndex !== -1) {
                 waterData[targetIndex] = { date, operator, kimLong, volume: calculatedVolume };
             } else {
@@ -532,13 +528,12 @@
             waterData.sort((a, b) => new Date(a.date) - new Date(b.date));
             localStorage.setItem('bwaco_hydro_kl_storage', JSON.stringify(waterData));
 
-            // Reset form nhập dữ liệu
             document.getElementById('input-kim-long-val').value = '';
             document.getElementById('volume-preview').innerText = "Dung tích lòng hồ tương ứng: - m³";
 
             updateUI();
             evaluateRowDelta(date);
-            alert(`Thành công: Đã ghi nhận số liệu ngày ${formattedDateStr} và đồng bộ trực tuyến lên tab Kim_Long!`);
+            alert(`Thành công: Đã cập nhật số liệu ngày ${formattedDateStr} và đồng bộ trực tuyến lên tab Kim_Long!`);
         })
         .catch(error => {
             console.error("Lỗi đồng bộ mạng:", error);
@@ -550,7 +545,6 @@
         });
     }
 
-    // CHỨC NĂNG MỞ NHANH FILE TRANG TÍNH TỔNG TRÊN CLOUD
     function openGoogleSheets() {
         window.open("https://docs.google.com/spreadsheets/d/1rxTZi7oV2JZYm0rLQcGBExQVUu7YNt0RAWljbwaAI4g/edit?gid=0#gid=0", "_blank");
     }
