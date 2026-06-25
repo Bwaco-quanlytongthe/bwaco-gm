@@ -225,7 +225,7 @@
 <script>
     // ĐƯỜNG DẪN KẾT NỐI ĐẾN GOOGLE APPS SCRIPT CỦA BẠN
     const GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz9mwHidpoFC3EZJ7M8nDjdzaUe1BnvOc0OrH_1zXSa1Nn9rcNjyZ77fSTXWv7Ro5C4/exec";
-    
+
     let waterData = [];
     let myChart = null;
     let selectedDateForReport = '';
@@ -475,7 +475,7 @@
         }
     }
 
-    // CHỨC NĂNG CHÍNH: LƯU LỌC & ĐỒNG BỘ ONLINE LÊN GOOGLE SHEETS
+    // CHỨC NĂNG CHÍNH: LƯU LỌC, KIỂM TRA CHẶN LỖI TRÙNG NGÀY & ĐỒNG BỘ CLOUD
     function addDailyRecord() {
         const date = document.getElementById('input-date-val').value;
         const operator = document.getElementById('input-operator-val').value.trim();
@@ -490,31 +490,35 @@
         const d = new Date(date);
         const formattedDateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 
-        // 1. Tạo gói dữ liệu chuẩn hóa gửi lên Cloud (trùng tên với cột tiêu đề của bạn trong ảnh)
+        // --- BƯỚC CHẶN LỖI TRÙNG NGÀY BẮT BUỘC NGAY TỪ INPUT ---
+        const targetIndex = waterData.findIndex(item => item.date === date);
+        if (targetIndex !== -1) {
+            const acceptOverwrite = confirm(`⚠️ CẢNH BÁO LỖI TRÙNG NGÀY:\nNgày [ ${formattedDateStr} ] đã có số liệu do [ ${waterData[targetIndex].operator} ] nhập.\n\nBạn có chắc chắn muốn GHI ĐÈ để cập nhật số liệu mới không?`);
+            if (!acceptOverwrite) {
+                return; // Ngắt hàm luôn, chặn đứng không truyền mạng lên Google Sheets
+            }
+        }
+
         const payloadCloud = {
-            "tenHo": "Xuyen_Moc", // Định vị chính xác vào Tab Hồ Xuyên Mộc
+            "tenHo": "Xuyen_Moc", 
             "ngayNhap": formattedDateStr,
             "nguoiNhap": operator,
             "cotNuoc": xuyenMoc,
             "ghiChu": `Dung tích quy đổi: ${calculatedVolume.toLocaleString('vi-VN')} m³`
         };
 
-        // Trạng thái chờ xử lý mạng
         const submitBtn = document.getElementById('btn-submit-form');
         const originalBtnText = submitBtn.innerHTML;
         submitBtn.disabled = true;
         submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> đang đồng bộ dữ liệu...`;
 
-        // 2. Chạy lệnh Fetch đẩy dữ liệu trực tuyến qua Cổng Google Apps Script
         fetch(GOOGLE_WEBAPP_URL, {
             method: "POST",
-            mode: "no-cors", // Đảm bảo không dính lỗi bảo mật chặn chéo miền (CORS)
+            mode: "no-cors", 
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payloadCloud)
         })
         .then(() => {
-            // 3. Sau khi đẩy dữ liệu online thành công -> tiến hành cập nhật bộ nhớ offline dưới máy
-            const targetIndex = waterData.findIndex(item => item.date === date);
             if (targetIndex !== -1) {
                 waterData[targetIndex] = { date, operator, xuyenMoc, volume: calculatedVolume };
             } else {
@@ -524,28 +528,24 @@
             waterData.sort((a, b) => new Date(a.date) - new Date(b.date));
             localStorage.setItem('bwaco_hydro_xm_storage', JSON.stringify(waterData));
 
-            // Reset form nhập dữ liệu mực nước
             document.getElementById('input-xuyen-moc-val').value = '';
             document.getElementById('volume-preview').innerText = "Dung tích lòng hồ tương ứng: - m³";
 
             updateUI();
             evaluateRowDelta(date);
-            alert(`Thành công: Đã ghi nhận số liệu ngày ${formattedDateStr} và đồng bộ trực tuyến lên Google Sheets!`);
+            alert(`Thành công: Đã cập nhật số liệu ngày ${formattedDateStr} và đồng bộ trực tuyến lên tab Xuyen_Moc!`);
         })
         .catch(error => {
             console.error("Lỗi đồng bộ:", error);
             alert("Không thể kết nối đến máy chủ Cloud. Vui lòng kiểm tra lại đường truyền mạng!");
         })
         .finally(() => {
-            // Mở khóa nút bấm trở lại trạng thái ban đầu
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalBtnText;
         });
     }
 
-    // CHỨC NĂNG MỚI: MỞ NHANH LINK GOOGLE SHEETS ĐỂ XEM TRỰC TUYẾN
     function openGoogleSheets() {
-        // Đường link dẫn tới file trang tính tổng của bạn
         window.open("https://docs.google.com/spreadsheets/d/1rxTZi7oV2JZYm0rLQcGBExQVUu7YNt0RAWljbwaAI4g/edit?gid=0#gid=0", "_blank");
     }
 
@@ -595,6 +595,7 @@
         }).join('');
     }
 
+    // ... (Giữ nguyên phần vẽ biểu đồ và khởi tạo bảng đặc tính bên dưới giống hệt file cũ của bạn)
     function renderChart() {
         const canvas = document.getElementById('waterLevelChart');
         if (!canvas) return;
