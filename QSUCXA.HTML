@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BWACO | CÔNG CỤ TÍNH TOÁN THỦY LỰC SÚC XẢ QUẢ MÚT (PIGGING)</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        /* =====================================================================
+           1. THIẾT LẬP NỀN TẢNG & MÀU SẮC CHUẨN BWACO
+           ===================================================================== */
+        :root { 
+            --primary: #1e4b8a; 
+            --accent: #f1c40f; 
+            --bg: #f0f2f5; 
+            --success: #27ae60; 
+            --white: #ffffff;
+            --border: #cbd5e1;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            transition: all 0.1s ease; 
+        }
+
+        body { 
+            background-color: var(--bg); 
+            color: #333; 
+            padding: 25px; 
+            font-size: 13px; 
+        }
+        
+        .navbar { 
+            background: var(--primary); 
+            padding: 0 25px; 
+            height: 60px; 
+            display: flex; 
+            align-items: center; 
+            color: white; 
+            font-weight: bold; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15); 
+            text-transform: uppercase; 
+            font-size: 14px; 
+            margin-bottom: 20px; 
+            border-radius: 8px;
+        }
+
+        .grid-container { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 20px; 
+        }
+        
+        @media (min-width: 992px) { 
+            .grid-container { 
+                grid-template-columns: 1fr 400px; 
+            } 
+        }
+
+        .card { 
+            background: var(--white); 
+            border-radius: 12px; 
+            padding: 20px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            border: 1px solid #e2e8f0; 
+        }
+        
+        .card-title { 
+            font-size: 13px; 
+            font-weight: bold; 
+            color: var(--primary); 
+            text-transform: uppercase; 
+            border-bottom: 2px solid #edf2f7; 
+            padding-bottom: 10px; 
+            margin-bottom: 15px; 
+        }
+
+        .form-row { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 12px; 
+            margin-bottom: 12px; 
+        }
+        
+        .form-group { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 4px; 
+        }
+        
+        .form-group.span-2 { grid-column: span 2; }
+        .form-group.span-4 { grid-column: span 4; }
+
+        label { 
+            font-weight: 700; 
+            font-size: 11px; 
+            color: #4a5568; 
+            text-transform: uppercase; 
+        }
+        
+        input, select { 
+            width: 100%; 
+            padding: 8px 10px; 
+            border: 1px solid var(--border); 
+            border-radius: 6px; 
+            font-size: 13px; 
+            outline: none; 
+            background: #fff; 
+        }
+        
+        input:focus, select:focus { 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 3px rgba(30, 75, 138, 0.15); 
+        }
+
+        /* Hệ thống nút lệnh điều khiển */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-action { 
+            border: none; 
+            padding: 12px 20px; 
+            font-size: 13px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 6px; 
+        }
+        
+        .btn-calc { 
+            background-color: var(--success); 
+            color: white; 
+            flex: 2;
+        }
+        .btn-calc:hover { background-color: #219653; }
+        
+        .btn-clear {
+            background-color: #718096;
+            color: white;
+            flex: 1;
+        }
+        .btn-clear:hover { background-color: #4a5568; }
+
+        /* Khối hiển thị kết quả đầu ra */
+        .results-box { 
+            background-color: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 8px; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+        }
+        
+        .res-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 6px 0; 
+            border-bottom: 1px dashed #e2e8f0; 
+            font-size: 13px; 
+        }
+        
+        .res-row:last-child { border-bottom: none; }
+        .res-row .val { font-weight: bold; color: #2d3748; }
+
+        .highlight-box { 
+            background-color: #ebf7ed; 
+            border: 1px solid #c3e6cb; 
+            border-radius: 6px; 
+            padding: 15px; 
+            text-align: center; 
+            margin-top: 10px; 
+        }
+        
+        .highlight-box h2 { 
+            font-size: 26px; 
+            color: var(--success); 
+            font-weight: 800; 
+            margin-top: 2px; 
+        }
+        
+        .highlight-box p { 
+            font-size: 11px; 
+            color: #155724; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+        }
+
+        /* =====================================================================
+           BỔ SUNG: KHỐI GIẢI THÍCH CÔNG THỨC THỦY LỰC DÀNH CHO KỸ THUẬT VIÊN
+           ===================================================================== */
+        .formula-card {
+            grid-column: span 1;
+            margin-top: 10px;
+            background-color: #ffffe0; /* Nền vàng giấy súc màu nhạt dễ nhìn */
+            border-left: 5px solid var(--accent);
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .formula-card h4 {
+            color: #795548;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .formula-card ol {
+            padding-left: 18px;
+            color: #5d4037;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .formula-card ol li {
+            margin-bottom: 6px;
+        }
+
+        .formula-card code {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: Consolas, monospace;
+            font-weight: bold;
+            color: #c0392b;
+        }
+
+        @media (min-width: 992px) {
+            .formula-card {
+                grid-column: span 2; /* Trải dài toàn màn hình khi ở desktop */
+            }
+        }
+
+        .footer-note { font-size: 11px; color: #718096; text-align: center; padding: 15px; background-color: #edf2f7; border-top: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">🏢 BWACO | HỆ THỐNG PHÂN TÍCH THỦY LỰC SÚC XẢ QUẢ MÚT CÔNG NGHỆ CAO</div>
+
+<div class="grid-container">
+    
+    <div class="card">
+        <div class="card-title">📥 Cấu hình thông số hình học & Địa hình tuyến ống</div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Chiều dài đoạn ống (L - mét)</label>
+                <input type="number" id="L_pipe" value="500" min="1">
+            </div>
+            <div class="form-group">
+                <label>Đường kính trong (D - mm)</label>
+                <input type="number" id="D_pipe" value="100" min="1">
+            </div>
+            <div class="form-group.span-2">
+                <label>Vật liệu chế tạo đường ống</label>
+                <select id="mat_pipe">
+                    <option value="0.010">Ống nhựa cao cấp (HDPE / PVC mới) [n=0.010]</option>
+                    <option value="0.012">Ống gang dẻo có lót xi măng [n=0.012]</option>
+                    <option value="0.013">Ống thép công nghiệp mới [n=0.013]</option>
+                    <option value="0.015">Ống sắt/gang cũ bám cặn [n=0.015]</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Cốt địa hình điểm đầu (m)</label>
+                <input type="number" id="z_start" value="15.5" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Cốt địa hình điểm cuối (m)</label>
+                <input type="number" id="z_end" value="12.0" step="0.1">
+            </div>
+            <div class="form-group.span-2">
+                <label>Chế độ địa hình trắc dọc</label>
+                <select id="geo_mode" onchange="toggleGeoInput()">
+                    <option value="CALC">Tính theo cốt chênh lệch thực tế</option>
+                    <option value="FLAT">Địa hình bằng phẳng (Chênh lệch = 0)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Áp lực đầu tuyến (P - Bar)</label>
+                <input type="number" id="p_start" value="2.5" step="0.1" min="0.1">
+            </div>
+            <div class="form-group">
+                <label>Số lượng Co 90° đi qua</label>
+                <input type="number" id="co_90" value="4" min="0">
+            </div>
+            <div class="form-group">
+                <label>Số lượng Cút 45° đi qua</label>
+                <input type="number" id="cut_45" value="2" min="0">
+            </div>
+            <div class="form-group">
+                <label>Độ khít của quả mút (Pig)</label>
+                <select id="pig_type">
+                    <option value="0.15">Quả mút mềm thông thường (Cản 0.15 Bar)</option>
+                    <option value="0.25">Quả mút mật độ cao / Khít chặt (Cản 0.25 Bar)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group.span-2">
+                <label>Thời điểm thả mút / Mở van bắt đầu</label>
+                <input type="time" id="t_start" value="09:00">
+            </div>
+            <div class="form-group.span-2">
+                <label>Thời điểm mút ra / Đóng van kết thúc</label>
+                <input type="time" id="t_end" value="09:25">
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-action btn-calc" onclick="executePiggingHydraulics()">⚡ Phân tích & Tính toán khối lượng</button>
+            <button class="btn-action btn-clear" onclick="clearCalculatorForm()">🔄 Làm trống số liệu</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📊 Kết quả kiểm tra thủy lực mút</div>
+        <div class="results-box">
+            <div class="res-row"><span>Chênh lệch cao độ địa hình (ΔZ):</span><span class="val" id="out_dz">0.00 m</span></div>
+            <div class="res-row"><span>Áp lực đẩy hữu hiệu dòng chảy:</span><span class="val" id="out_h_net">0.00 mH₂O</span></div>
+            <div class="res-row"><span>Tổn thất cục bộ phụ kiện (Co/Cút):</span><span class="val" id="out_h_local">0.00 m</span></div>
+            <div class="res-row"><span>Vận tốc di chuyển của quả mút:</span><span class="val" id="out_v">0.00 m/s</span></div>
+            <div class="res-row"><span>Lưu lượng súc xả tức thời:</span><span class="val" id="out_Q">0.00 lít/giây</span></div>
+            <div class="res-row"><span>Thời gian hành trình quả mút:</span><span class="val" id="out_time">0 phút</span></div>
+            
+            <div class="highlight-box">
+                <p>Khối lượng nước súc xả tiêu hao thực tế</p>
+                <h2 id="out_W">0.00 m³</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card formula-card">
+        <h4>📖 HƯỚNG DẪN CÔNG THỨC THỦY LỰC SÚC XẢ QUẢ MÚT (DÀNH CHO KỸ THUẬT VIÊN)</h4>
+        <ol>
+            <li><b>Cột áp đẩy hữu hiệu thực tế (H_net):</b> Toàn bộ áp lực đầu nguồn sẽ bị giảm trừ do lực cản ma sát cơ học của quả mút và cộng/trừ thêm độ chênh cao địa hình trắc dọc: <br><code>H_net = (P_bar × 10) + (Z_đầu - Z_cuối) - (P_mút × 10)</code></li>
+            <li><b>Tổn thất dọc đường (hf) & Tổn thất cục bộ (hc):</b> Áp lực đẩy hữu hiệu <code>H_net</code> sẽ tiêu hao hoàn toàn cho lực ma sát dọc thành ống (theo mô hình Manning) và lực cản xoáy dòng khi nước và quả mút đi xuyên qua hệ thống Co cút hiện trường: <br><code>hf = (v² × n² × L) / Rh^(4/3)</code> và <code>hc = Σζ × [v² / (2 × g)]</code></li>
+            <li><b>Hệ số cản phụ kiện mặc định thiết lập:</b> Mỗi <code>Co 90°</code> tạo ra hệ số cản cục bộ là <code>ζ = 0.90</code>; mỗi <code>Cút 45°</code> tạo ra hệ số cản là <code>ζ = 0.40</code>. Gia tốc trọng trường định mức là <code>g = 9.81 m/s²</code>.</li>
+            <li><b>Thuật toán tìm Vận tốc (v) & Lưu lượng (Q):</b> Hệ thống sử dụng vòng lặp thủy lực Newton để giải phương trình bậc hai tìm vận tốc dòng thực tế <code>v (m/s)</code>. Từ đó tìm ra lưu lượng tức thời qua mặt cắt ống: <code>Q = v × A</code> <i>(với A là diện tích lòng ống)</i>.</li>
+            <li><b>Khối lượng nước súc xả (W):</b> Bằng lưu lượng giây nhân với tổng thời gian mở van súc xả: <br><code>W = Q × Tổng số giây xả (m³)</code>.</li>
+        </ol>
+    </div>
+
+</div>
+
+<script>
+    let tempMainImagesArray = []; 
+    let filteredDeviceIds = []; 
+
+    function toggleGeoInput() {
+        let mode = document.getElementById('geo_mode').value;
+        if(mode === 'FLAT') {
+            document.getElementById('z_start').disabled = true;
+            document.getElementById('z_end').disabled = true;
+            document.getElementById('z_start').value = 0;
+            document.getElementById('z_end').value = 0;
+        } else {
+            document.getElementById('z_start').disabled = false;
+            document.getElementById('z_end').disabled = false;
+        }
+        executePiggingHydraulics();
+    }
+
+    // ⭐ TÍNH NĂNG MỚI: Hàm làm trống toàn bộ các trường nhập liệu về mốc 0 hoặc trống
+    function clearCalculatorForm() {
+        document.getElementById('L_pipe').value = "";
+        document.getElementById('D_pipe').value = "";
+        document.getElementById('z_start').value = "";
+        document.getElementById('z_end').value = "";
+        document.getElementById('p_start').value = "";
+        document.getElementById('co_90').value = "0";
+        document.getElementById('cut_45').value = "0";
+        document.getElementById('t_start').value = "";
+        document.getElementById('t_end').value = "";
+        
+        // Reset bảng hiển thị kết quả về 0
+        document.getElementById('out_dz').textContent = "0.00 m";
+        document.getElementById('out_h_net').textContent = "0.00 mH₂O";
+        document.getElementById('out_h_local').textContent = "0.00 m";
+        document.getElementById('out_v').textContent = "0.00 m/s";
+        document.getElementById('out_Q').textContent = "0.00 lít/giây";
+        document.getElementById('out_time').textContent = "0 phút";
+        document.getElementById('out_W').textContent = "0.00 m³";
+    }
+
+    function executePiggingHydraulics() {
+        let L = parseFloat(document.getElementById('L_pipe').value);
+        let D_mm = parseFloat(document.getElementById('D_pipe').value);
+        let n = parseFloat(document.getElementById('mat_pipe').value);
+        let P_bar = parseFloat(document.getElementById('p_start').value);
+        
+        let z1 = parseFloat(document.getElementById('z_start').value) || 0;
+        let z2 = parseFloat(document.getElementById('z_end').value) || 0;
+        let geoMode = document.getElementById('geo_mode').value;
+        
+        let numCo90 = parseInt(document.getElementById('co_90').value) || 0;
+        let numCut45 = parseInt(document.getElementById('cut_45').value) || 0;
+        let pigLossBar = parseFloat(document.getElementById('pig_type').value);
+        
+        let t1 = document.getElementById('t_start').value;
+        let t2 = document.getElementById('t_end').value;
+
+        if (isNaN(L) || isNaN(D_mm) || isNaN(P_bar) || !t1 || !t2) {
+            alert("⚠️ THÔNG BÁO: Vui lòng điền đầy đủ các thông số đầu vào hiện trường trước khi tính toán!");
+            return;
+        }
+
+        let time1 = new Date("2026-01-01 " + t1);
+        let time2 = new Date("2026-01-01 " + t2);
+        if (time2 < time1) time2.setDate(time2.getDate() + 1);
+        let totalSeconds = (time2 - time1) / 1000;
+
+        if (totalSeconds <= 0) {
+            alert("⚠️ LỖI THỜI GIAN: Thời điểm kết thúc mút ra phải lớn hơn thời điểm thả mút bắt đầu!");
+            return;
+        }
+
+        let dZ = 0;
+        if(geoMode === 'CALC') {
+            dZ = z1 - z2; 
+        }
+
+        let H_static = P_bar * 10;
+        let H_pig_friction = pigLossBar * 10; 
+        let H_net = H_static + dZ - H_pig_friction;
+        
+        if(H_net <= 0) {
+            alert("⚠️ CẢNH BÁO THỦY LỰC: Áp lực nguồn quá thấp! Không đủ năng lượng thắng lực cản quả mút và dốc địa hình.");
+            return;
+        }
+
+        let D = D_mm / 1000; 
+        let Rh = D / 4;
+        let A = (Math.PI * Math.pow(D, 2)) / 4;
+        let zeta_total = (numCo90 * 0.9) + (numCut45 * 0.4);
+
+        let v = 1.0; 
+        let g = 9.81;
+        
+        for(let k = 0; k < 15; k++) {
+            let hf_factor = (Math.pow(n, 2) * L) / Math.pow(Rh, 4/3);
+            let hc_factor = zeta_total / (2 * g);
+            v = Math.sqrt(H_net / (hf_factor + hc_factor));
+        }
+
+        if (v > 15) v = 15;
+
+        let Q_m3s = v * A;
+        let Q_lps = Q_m3s * 1000;
+        let W = Q_m3s * totalSeconds;
+        let h_local_res = zeta_total * (Math.pow(v, 2) / (2 * g));
+
+        document.getElementById('out_dz').textContent = dZ.toFixed(2) + " m";
+        document.getElementById('out_h_net').textContent = H_net.toFixed(2) + " mH₂O";
+        document.getElementById('out_h_local').textContent = h_local_res.toFixed(2) + " m";
+        document.getElementById('out_v').textContent = v.toFixed(2) + " m/s";
+        document.getElementById('out_Q').textContent = Q_lps.toFixed(2) + " lít/giây";
+        document.getElementById('out_time').textContent = (totalSeconds / 60).toFixed(1) + " phút";
+        document.getElementById('out_W').textContent = W.toFixed(2) + " m³";
+    }
+
+    function openImageLightbox(src) { 
+        document.getElementById('lightbox-target-image').src = src; 
+        document.getElementById('lightbox-container').style.display = 'flex'; 
+    }
+    function closeImageLightbox() { document.getElementById('lightbox-container').style.display = 'none'; }
+    
+    window.onload = function() {
+        executePiggingHydraulics();
+    };
+</script>
+
+</body>
+</html>

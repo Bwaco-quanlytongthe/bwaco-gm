@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Giám Sát Nước Nguồn - BWACO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%); color: white; min-height: 100vh; }
+        .sidebar .nav-link { color: rgba(255,255,255,0.8); margin: 5px 0; border-radius: 5px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background-color: rgba(255,255,255,0.1); }
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        .card-custom:hover { transform: translateY(-2px); }
+        .status-badge { font-size: 0.85rem; padding: 6px 12px; border-radius: 20px; }
+        .metric-val { font-size: 1.8rem; font-weight: bold; color: #1e3c72; }
+        .table-responsive { max-height: 480px; overflow-y: auto; }
+        .clickable-row { cursor: pointer; }
+        .clickable-row:hover { background-color: #e3f2fd !important; }
+        .boss-dropdown-item { padding: 8px 16px; width: 280px; }
+        .boss-dropdown-item input { pointer-events: none; }
+        .boss-dropdown-item label { cursor: pointer; width: 100%; display: block; }
+        .dropdown-menu { z-index: 1050 !important; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- SIDEBAR -->
+        <div class="col-md-3 col-lg-2 sidebar p-3 d-none d-md-block">
+            <div class="text-center mb-4">
+                <i class="fa-solid fa-droplet fa-3x text-info mb-2"></i>
+                <h5 class="fw-bold text-uppercase">BWACO Water</h5>
+                <small class="text-white-50">Giám Sát Nước Nguồn</small>
+            </div>
+            <hr>
+            <ul class="nav flex-column nav-pills">
+                <li class="nav-item"><a class="nav-link active" href="#dashboard" data-bs-toggle="tab"><i class="fa-solid fa-chart-line me-2"></i>Tổng Quan</a></li>
+                <li class="nav-item"><a class="nav-link" href="#input-data" data-bs-toggle="tab"><i class="fa-solid fa-pen-to-square me-2"></i>Nhập Cốt Hằng Ngày</a></li>
+                <li class="nav-item"><a class="nav-link" href="#hydrology-table" data-bs-toggle="tab"><i class="fa-solid fa-table me-2"></i>Bảng tra cốt (mét) & Trữ Lượng</a></li>
+            </ul>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="col-md-9 col-lg-10 ms-sm-auto p-4">
+            <div class="tab-content">
+                
+                <!-- TAB 1: TỔNG QUAN -->
+                <div class="tab-pane fade show active" id="dashboard">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <div>
+                            <h1 class="h2 text-dark fw-bold mb-1">Giám sát Nguồn Nước Hệ Thống Đá Đen - Sông Ray</h1>
+                            <div class="text-secondary fs-5 fw-semibold mt-1">
+                                <i class="fa-solid fa-industry me-2 text-danger"></i>Công suất khai thác nhà máy Đá Đen: <span class="text-danger fw-bold">185.000 m³/ngày</span>
+                            </div>
+                        </div>
+                        
+                        <!-- MENU DROPDOWN CHỌN SẾP -->
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="dropdown">
+                                <button class="btn btn-success dropdown-toggle fw-bold shadow-sm" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                                    <i class="fa-solid fa-user-check me-1"></i> Chọn Sếp Nhận BC
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-success p-2" aria-labelledby="dropdownMenuButton" id="boss-dropdown-menu">
+                                    <!-- Render động từ Javascript -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- THẺ ĐO LƯỜNG NHANH -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-sm-6 col-xl-4">
+                            <div class="card card-custom p-3 bg-white border-start border-info border-4">
+                                <div class="text-muted small uppercase fw-bold">Cốt Hồ Sông Ray</div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span class="metric-val" id="lbl-song-ray">- m</span>
+                                    <span class="badge bg-info status-badge" id="status-song-ray">Ổn định</span>
+                                </div>
+                                <small class="text-muted mt-2">Nguồn bổ cấp chiến lược thượng nguồn</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-4">
+                            <div class="card card-custom p-3 bg-white border-start border-warning border-4">
+                                <div class="text-muted small uppercase fw-bold">Kênh Dẫn Sông Ray -> Đá Đen</div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span class="metric-val" id="lbl-kenh-dan">- m³/s</span>
+                                    <span class="badge bg-warning text-dark status-badge" id="status-kenh-dan">Giám sát</span>
+                                </div>
+                                <small class="text-muted mt-2">Lưu lượng mương hở điều tiết bổ sung</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-4">
+                            <div class="card card-custom p-3 bg-white border-start border-primary border-4">
+                                <div class="text-muted small uppercase fw-bold">Cốt Hồ Đá Đen hiện tại</div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span class="metric-val" id="lbl-da-den">- m</span>
+                                    <span class="badge bg-success status-badge" id="status-da-den">An Toàn</span>
+                                </div>
+                                <div class="text-muted small mt-2">Dung tích thực: <span id="lbl-volume-da-den" class="fw-bold text-primary">-</span> m³</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BẢNG CHẨN ĐOÁN GỬI SẾP -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <div class="card card-custom p-4 bg-white">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="fw-bold text-primary mb-0"><i class="fa-solid fa-magnifying-glass-chart me-2"></i>Bảng Chẩn Đoán Biến Động Thủy Văn Gửi Sếp</h5>
+                                    <span class="badge bg-primary fs-6 px-3" id="evaluated-date-tag">Chọn ngày dưới nhật ký</span>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-7 border-end">
+                                        <h6 class="fw-bold text-navy mb-2"><i class="fa-solid fa-arrow-compare me-1"></i> Phân tích biến động liên hồ chứa:</h6>
+                                        <div id="system-diagnostic-text" class="text-muted bg-light p-3 rounded mb-3" style="min-height: 160px; font-size: 0.95rem; line-height: 1.6;">
+                                            Bấm vào dòng bất kỳ trong bảng Nhật ký bên tab "Nhập Cốt Hằng Ngày" để xem phân tích biến động liên hồ chứa Đá Đen - Sông Ray.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-file-text me-1"></i> Nội dung tin nhắn (Định dạng tiếng Việt):</h6>
+                                        <div id="quick-assessment" class="text-dark bg-light p-3 rounded mb-3 font-monospace fw-semibold" style="min-height: 160px; white-space: pre-line; font-size: 0.92rem; line-height: 1.6; border-left: 4px solid #198754; background-color: #f9fbf9 !important;">
+                                            Nội dung tin nhắn báo cáo gửi sếp dạng danh sách có dấu sẽ tự động xuất hiện tại đây...
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- DANH SÁCH CÁC TÊN SẾP CẦN GỬI BÁO CÁO -->
+                                <div class="alert alert-success d-flex align-items-center py-2 px-3 mb-3 card-custom border-start border-success border-4" id="selected-boss-alert" style="background-color: #edf7ed;">
+                                    <i class="fa-solid fa-bell text-success me-2 fs-5"></i>
+                                    <div class="small fw-semibold text-dark" id="selected-boss-label">
+                                        Hệ thống chưa chọn Sếp nhận báo cáo. Vui lòng tick chọn tại nút <b class="text-success">"Chọn Sếp Nhận BC"</b> ở góc phải trên.
+                                    </div>
+                                </div>
+
+                                <div class="pt-2 border-top d-flex flex-wrap gap-2 justify-content-end align-items-center">
+                                    <span class="text-muted small me-auto"><i class="fa-solid fa-circle-info"></i> Hệ thống tự động cấu trúc nội dung tối ưu khi gửi chuyển tiếp sang app</span>
+                                    <button class="btn btn-sm btn-primary px-3" onclick="shareReport('zalo')"><i class="fa-solid fa-comment-sms me-1"></i> Gửi Zalo</button>
+                                    <button class="btn btn-sm btn-info text-white px-3" onclick="shareReport('sms')"><i class="fa-solid fa-message me-1"></i> Gửi SMS</button>
+                                    <button class="btn btn-sm btn-dark px-3" onclick="shareReport('email')"><i class="fa-solid fa-envelope me-1"></i> Gửi Email</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BIỂU ĐỒ -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card card-custom p-4 bg-white">
+                                <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-chart-area me-2"></i>Biểu Đồ Biến Động Cao Trình & Lưu Lượng Kênh Tiếp Nước</h5>
+                                <div style="position: relative; height:320px;"><canvas id="waterLevelChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: NHẬP SỐ LIỆU & NHẬT KÝ -->
+                <div class="tab-pane fade" id="input-data">
+                    <div class="pt-3 pb-2 mb-3 border-bottom">
+                        <h2 class="fw-bold">Nhập Dữ Liệu Quan Trắc Định Kỳ & Nhật Ký Số Liệu</h2>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4 mb-4">
+                            <div class="card card-custom p-4 bg-white">
+                                <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-square-plus me-2"></i>Thêm Bản Ghi Mới</h5>
+                                <form id="dataForm" onsubmit="event.preventDefault(); addDailyRecord();">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Ngày quan trắc</label>
+                                        <input type="date" id="input-date-val" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Tên người nhập số liệu</label>
+                                        <input type="text" id="input-operator-val" class="form-control" placeholder="Họ và tên..." required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Cốt nước Hồ Sông Ray (m)</label>
+                                        <input type="number" step="0.01" id="input-song-ray-val" class="form-control" placeholder="Ví dụ: 72.40" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Lưu lượng Kênh Dẫn xả về Đá Đen (m³/s)</label>
+                                        <input type="number" step="0.1" id="input-kenh-dan-val" class="form-control" placeholder="Lưu lượng điều tiết" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Cốt nước Hồ Đá Đen (m)</label>
+                                        <input type="number" step="0.01" min="37.00" max="46.00" id="input-da-den-val" class="form-control" placeholder="Từ 37.00 đến 46.00" required oninput="previewVolume(this.value)">
+                                        <div class="form-text text-primary fw-bold" id="volume-preview">Dung tích quy đổi: - m³</div>
+                                    </div>
+                                    <button type="submit" id="btn-submit-form" class="btn btn-primary w-100 mb-2"><i class="fa-solid fa-floppy-disk me-2"></i>Lưu Nhật Ký & Đồng Bộ Cloud</button>
+                                    <button type="button" class="btn btn-outline-primary w-100" onclick="loadSampleData()"><i class="fa-solid fa-database me-1"></i> Tải Dữ Liệu Mẫu Kiểm Thử</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card card-custom p-4 bg-white">
+                                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                    <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-table-list me-2"></i>Nhật Ký Số Liệu Lưu Trữ</h5>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-success btn-sm px-3" onclick="openGoogleSheets()"><i class="fa-solid fa-file-invoice me-1"></i> Xem Cơ Sở Dữ Liệu Sheets</button>
+                                        <button type="button" class="btn btn-success btn-sm px-3" onclick="exportToExcel()"><i class="fa-solid fa-file-excel me-1"></i> Xuất File Excel dự phòng</button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="clearAllData()"><i class="fa-solid fa-trash-can me-1"></i> Xóa toàn bộ</button>
+                                    </div>
+                                </div>
+                                <div class="alert alert-warning py-2 mb-2 small"><i class="fa-solid fa-circle-info me-1"></i> <b>Hướng dẫn:</b> Nhấn vào dòng lịch sử bất kỳ để kích hoạt chẩn đoán dữ liệu gửi báo cáo ngoài trang chủ.</div>
+                                <div class="table-responsive">
+                                    <table class="table table-striped align-middle text-center table-bordered">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th rowspan="2" class="align-middle">Ngày</th>
+                                                <th rowspan="2" class="align-middle">Người nhập</th>
+                                                <th colspan="3" class="table-primary text-dark fw-bold py-1">Chuỗi Thủy Văn Dòng Chảy</th>
+                                                <th colspan="2" class="table-info text-dark fw-bold py-1">Lòng Hồ Tiêu Thụ</th>
+                                                <th rowspan="2" class="align-middle">Xóa</th>
+                                            </tr>
+                                            <tr class="table-secondary text-dark small">
+                                                <th>Cốt Sông Ray (m)</th>
+                                                <th>Dòng chảy Kênh (m³/s)</th>
+                                                <th>Cốt Đá Đen (m)</th>
+                                                <th>Khối lượng (m³)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dataBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: BẢNG ĐƯỜNG ĐẶC TÍNH -->
+                <div class="tab-pane fade" id="hydrology-table">
+                    <div class="pt-3 pb-2 mb-3 border-bottom">
+                        <h2 class="fw-bold">Bảng Đặc Tính Lòng Hồ Đá Đen ($W - Z$)</h2>
+                    </div>
+                    <div class="card card-custom p-4 bg-white table-responsive" style="max-height: 550px;">
+                        <table class="table table-bordered table-striped text-center">
+                            <thead class="table-info sticky-top">
+                                <tr>
+                                    <th>Mực nước Z (m)</th>
+                                    <th>Dung tích tương ứng W (10⁶ m³)</th>
+                                    <th>Dung tích quy đổi chuẩn (m³)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hydrologyTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ĐƯỜNG DẪN KẾT NỐI ĐẾN GOOGLE APPS SCRIPT CỦA BẠN
+    const GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz9mwHidpoFC3EZJ7M8nDjdzaUe1BnvOc0OrH_1zXSa1Nn9rcNjyZ77fSTXWv7Ro5C4/exec";
+
+    let waterData = [];
+    let myChart = null;
+    let selectedDateForReport = '';
+    let compiledReportText = ''; 
+
+    const LIST_BOSSES = [
+        { id: 1, name: "Chủ tịch HĐQT - Sếp Đức", phone: "0913128148", email: "phong_nguonnuoc@bwaco.com" },    
+        { id: 2, name: "Sếp Nguyễn Lương Điền - Tổng Giám Đốc", phone: "0913863426", email: "boss_giamdoc@bwaco.com" },
+        { id: 3, name: "Sếp Nguyễn Tiến Lạng  - PTGĐ ", phone: "0913840896", email: "boss_phogiamdoc@bwaco.com" },
+        { id: 4, name: "Sếp Nguyễn Cảnh Tùng  - PTGĐ", phone: "0913791839", email: "trucban@bwaco.com" },
+        { id: 5, name: "Sếp Võ Thị Nhã        - PTGĐ", phone: "0909045969", email: "truongphong_kt@bwaco.com" },
+        { id: 6, name: "Sếp Phạm Tấn Luận     - PTGĐ", phone: "0989175545", email: "quanly_ngaigiao@bwaco.com" },
+    ];
+
+    const rawHydroData = [
+        {z: 37.0, w: 4.87}, {z: 37.01, w: 4.89}, {z: 37.02, w: 4.90}, {z: 37.03, w: 4.92}, {z: 37.04, w: 4.93}, {z: 37.05, w: 4.95}, {z: 37.06, w: 4.97}, {z: 37.07, w: 4.98}, {z: 37.08, w: 5.00}, {z: 37.09, w: 5.01},
+        {z: 37.1, w: 5.03}, {z: 37.11, w: 5.05}, {z: 37.12, w: 5.06}, {z: 37.13, w: 5.08}, {z: 37.14, w: 5.10}, {z: 37.15, w: 5.12}, {z: 37.16, w: 5.13}, {z: 37.17, w: 5.15}, {z: 37.18, w: 5.17}, {z: 37.19, w: 5.18},
+        {z: 37.2, w: 5.20}, {z: 37.21, w: 5.22}, {z: 37.22, w: 5.23}, {z: 37.23, w: 5.25}, {z: 37.24, w: 5.27}, {z: 37.25, w: 5.29}, {z: 37.26, w: 5.30}, {z: 37.27, w: 5.32}, {z: 37.28, w: 5.34}, {z: 37.29, w: 5.35},
+        {z: 37.3, w: 5.37}, {z: 37.32, w: 5.40}, {z: 37.4, w: 5.54}, {z: 37.41, w: 5.56}, {z: 37.42, w: 5.58}, {z: 37.43, w: 5.59}, {z: 37.44, w: 5.61}, {z: 37.45, w: 5.63}, {z: 37.46, w: 5.66}, {z: 37.47, w: 5.67},
+        {z: 37.48, w: 5.68}, {z: 37.49, w: 5.70}, {z: 37.5, w: 5.72}, {z: 37.51, w: 5.74}, {z: 37.52, w: 5.76}, {z: 37.53, w: 5.77}, {z: 37.54, w: 5.79}, {z: 37.55, w: 5.81}, {z: 37.56, w: 5.83}, {z: 37.57, w: 5.85},
+        {z: 37.58, w: 5.86}, {z: 37.59, w: 5.88}, {z: 37.6, w: 5.90}, {z: 37.61, w: 5.92}, {z: 37.62, w: 5.94}, {z: 37.63, w: 5.95}, {z: 37.64, w: 5.97}, {z: 37.65, w: 5.99}, {z: 37.66, w: 6.01}, {z: 37.67, w: 6.03},
+        {z: 37.68, w: 6.04}, {z: 37.69, w: 6.06}, {z: 37.7, w: 6.08}, {z: 37.71, w: 6.10}, {z: 37.72, w: 6.12}, {z: 37.73, w: 6.14}, {z: 37.74, w: 6.16}, {z: 37.75, w: 6.18}, {z: 37.76, w: 6.19}, {z: 37.77, w: 6.21},
+        {z: 37.78, w: 6.23}, {z: 37.79, w: 6.25}, {z: 37.8, w: 6.27}, {z: 37.81, w: 6.29}, {z: 37.82, w: 6.31}, {z: 37.83, w: 6.33}, {z: 37.84, w: 6.35}, {z: 37.85, w: 6.37}, {z: 37.86, w: 6.37}, {z: 37.87, w: 6.41},
+        {z: 37.88, w: 6.43}, {z: 37.89, w: 6.45}, {z: 37.9, w: 6.47}, {z: 37.91, w: 6.49}, {z: 37.92, w: 6.51}, {z: 37.93, w: 6.53}, {z: 37.94, w: 6.55}, {z: 37.95, w: 6.57}, {z: 37.96, w: 6.58}, {z: 37.97, w: 6.60},
+        {z: 37.98, w: 6.62}, {z: 37.99, w: 6.64}, {z: 38.0, w: 6.66}, {z: 38.01, w: 6.68}, {z: 38.02, w: 6.70}, {z: 38.03, w: 6.72}, {z: 38.04, w: 6.74}, {z: 38.05, w: 6.76}, {z: 38.06, w: 6.78}, {z: 38.07, w: 6.80},
+        {z: 38.08, w: 6.82}, {z: 38.09, w: 6.84}, {z: 38.1, w: 6.86}, {z: 38.11, w: 6.88}, {z: 38.12, w: 6.90}, {z: 38.13, w: 6.92}, {z: 38.14, w: 6.94}, {z: 38.15, w: 7.05}, {z: 38.16, w: 6.99}, {z: 38.17, w: 7.01},
+        {z: 38.18, w: 7.03}, {z: 38.19, w: 7.05}, {z: 38.2, w: 7.07}, {z: 38.21, w: 7.09}, {z: 38.22, w: 7.11}, {z: 38.23, w: 7.13}, {z: 38.24, w: 7.15}, {z: 38.25, w: 7.17}, {z: 38.26, w: 7.19}, {z: 38.27, w: 7.21},
+        {z: 38.28, w: 7.23}, {z: 38.29, w: 7.25}, {z: 38.3, w: 7.27}, {z: 38.31, w: 7.29}, {z: 38.32, w: 7.31}, {z: 38.33, w: 7.34}, {z: 38.34, w: 7.36}, {z: 38.35, w: 7.38}, {z: 38.36, w: 7.40}, {z: 38.37, w: 7.42},
+        {z: 38.38, w: 7.45}, {z: 38.39, w: 7.47}, {z: 38.4, w: 7.49}, {z: 38.41, w: 7.51}, {z: 38.42, w: 7.53}, {z: 38.43, w: 7.55}, {z: 38.44, w: 7.57}, {z: 38.45, w: 7.60}, {z: 38.46, w: 7.62}, {z: 38.47, w: 7.64},
+        {z: 38.48, w: 7.66}, {z: 38.49, w: 7.68}, {z: 38.5, w: 7.70}, {z: 38.51, w: 7.72}, {z: 38.52, w: 7.75}, {z: 38.53, w: 7.77}, {z: 38.54, w: 7.79}, {z: 38.55, w: 7.81}, {z: 38.56, w: 7.83}, {z: 38.57, w: 7.86},
+        {z: 38.58, w: 7.88}, {z: 38.59, w: 7.90}, {z: 38.6, w: 7.92}, {z: 38.61, w: 7.94}, {z: 38.62, w: 7.96}, {z: 38.63, w: 7.99}, {z: 38.64, w: 8.01}, {z: 38.65, w: 8.03}, {z: 38.66, w: 8.05}, {z: 38.67, w: 8.07},
+        {z: 38.68, w: 8.10}, {z: 38.69, w: 8.12}, {z: 38.7, w: 8.14}, {z: 38.71, w: 8.16}, {z: 38.72, w: 8.19}, {z: 38.73, w: 8.21}, {z: 38.74, w: 8.23}, {z: 38.75, w: 8.26}, {z: 38.76, w: 8.28}, {z: 38.77, w: 8.30},
+        {z: 38.78, w: 8.32}, {z: 38.79, w: 8.35}, {z: 38.8, w: 8.37}, {z: 38.81, w: 8.39}, {z: 38.82, w: 8.42}, {z: 38.83, w: 8.44}, {z: 38.84, w: 8.46}, {z: 38.85, w: 8.49}, {z: 38.86, w: 8.51}, {z: 38.87, w: 8.53},
+        {z: 38.88, w: 8.55}, {z: 38.89, w: 8.58}, {z: 38.9, w: 8.60}, {z: 38.91, w: 8.62}, {z: 38.92, w: 8.65}, {z: 38.93, w: 8.67}, {z: 38.94, w: 8.70}, {z: 38.95, w: 8.72}, {z: 38.96, w: 8.74}, {z: 38.97, w: 8.77},
+        {z: 38.98, w: 8.79}, {z: 38.99, w: 8.82}, {z: 39.0, w: 8.84}, {z: 39.01, w: 8.86}, {z: 39.02, w: 8.89}, {z: 39.03, w: 8.91}, {z: 39.04, w: 8.93}, {z: 39.05, w: 8.96}, {z: 39.06, w: 8.98}, {z: 39.07, w: 9.00},
+        {z: 39.08, w: 9.02}, {z: 39.09, w: 9.05}, {z: 39.1, w: 9.07}, {z: 39.11, w: 9.10}, {z: 39.12, w: 9.12}, {z: 39.13, w: 9.15}, {z: 39.14, w: 9.17}, {z: 39.15, w: 9.20}, {z: 39.16, w: 9.22}, {z: 39.17, w: 9.25},
+        {z: 39.18, w: 9.27}, {z: 39.19, w: 9.30}, {z: 39.2, w: 9.32}, {z: 39.21, w: 9.35}, {z: 39.22, w: 9.37}, {z: 39.23, w: 9.40}, {z: 39.24, w: 9.42}, {z: 39.25, w: 9.44}, {z: 39.26, w: 9.47}, {z: 39.27, w: 9.50},
+        {z: 39.28, w: 9.55}, {z: 39.29, w: 9.55}, {z: 39.3, w: 9.56}, {z: 39.31, w: 9.59}, {z: 39.32, w: 9.61}, {z: 39.33, w: 9.64}, {z: 39.34, w: 9.66}, {z: 39.35, w: 9.69}, {z: 39.36, w: 9.71}, {z: 39.37, w: 9.74},
+        {z: 39.38, w: 9.76}, {z: 39.39, w: 9.79}, {z: 39.4, w: 9.81}, {z: 39.41, w: 9.84}, {z: 39.42, w: 9.86}, {z: 39.43, w: 9.89}, {z: 39.44, w: 9.91}, {z: 39.45, w: 9.94}, {z: 39.46, w: 9.96}, {z: 39.47, w: 9.99},
+        {z: 39.48, w: 10.01}, {z: 39.49, w: 10.04}, {z: 39.5, w: 10.06}, {z: 39.51, w: 10.09}, {z: 39.52, w: 10.11}, {z: 39.53, w: 10.14}, {z: 39.54, w: 10.16}, {z: 39.55, w: 10.19}, {z: 39.56, w: 10.21}, {z: 39.57, w: 10.24},
+        {z: 39.58, w: 10.27}, {z: 39.59, w: 20.29}, {z: 39.6, w: 10.32}, {z: 39.61, w: 10.35}, {z: 39.62, w: 10.37}, {z: 39.63, w: 10.40}, {z: 39.64, w: 10.42}, {z: 39.65, w: 10.45}, {z: 39.66, w: 10.48}, {z: 39.67, w: 10.50},
+        {z: 39.68, w: 10.53}, {z: 39.69, w: 10.55}, {z: 39.7, w: 10.58}, {z: 39.71, w: 10.61}, {z: 39.72, w: 10.63}, {z: 39.73, w: 10.66}, {z: 39.74, w: 10.69}, {z: 39.75, w: 10.72}, {z: 39.76, w: 10.74}, {z: 39.77, w: 10.77},
+        {z: 39.78, w: 10.80}, {z: 39.79, w: 10.82}, {z: 39.8, w: 10.85}, {z: 39.81, w: 10.88}, {z: 39.82, w: 10.90}, {z: 39.83, w: 10.93}, {z: 39.84, w: 10.95}, {z: 39.85, w: 10.98}, {z: 39.86, w: 11.01}, {z: 39.87, w: 11.03},
+        {z: 39.88, w: 11.06}, {z: 39.89, w: 11.08}, {z: 39.9, w: 11.11}, {z: 39.91, w: 11.14}, {z: 39.92, w: 11.17}, {z: 39.93, w: 11.19}, {z: 39.94, w: 11.22}, {z: 39.95, w: 11.25}, {z: 39.96, w: 11.28}, {z: 39.97, w: 11.31},
+        {z: 39.98, w: 11.33}, {z: 39.99, w: 11.36}, {z: 40.0, w: 11.39}, {z: 40.01, w: 11.42}, {z: 40.02, w: 11.44}, {z: 40.03, w: 11.47}, {z: 40.04, w: 11.50}, {z: 40.05, w: 11.53}, {z: 40.06, w: 11.55}, {z: 40.07, w: 11.58},
+        {z: 40.08, w: 11.61}, {z: 40.09, w: 11.63}, {z: 40.1, w: 11.66}, {z: 40.11, w: 11.69}, {z: 40.12, w: 11.72}, {z: 40.13, w: 11.75}, {z: 40.14, w: 11.78}, {z: 40.15, w: 11.81}, {z: 40.16, w: 11.83}, {z: 40.17, w: 11.86},
+        {z: 40.18, w: 11.89}, {z: 40.19, w: 11.92}, {z: 40.2, w: 11.95}, {z: 40.21, w: 11.98}, {z: 40.22, w: 12.01}, {z: 40.23, w: 12.04}, {z: 40.24, w: 12.07}, {z: 40.25, w: 12.10}, {z: 40.26, w: 12.12}, {z: 40.27, w: 12.15},
+        {z: 40.28, w: 12.18}, {z: 40.29, w: 12.21}, {z: 40.3, w: 12.24}, {z: 40.31, w: 12.27}, {z: 40.32, w: 12.30}, {z: 40.33, w: 12.33}, {z: 40.34, w: 12.36}, {z: 40.35, w: 12.39}, {z: 40.36, w: 12.41}, {z: 40.37, w: 12.44},
+        {z: 40.38, w: 12.47}, {z: 40.39, w: 12.50}, {z: 40.4, w: 12.54}, {z: 40.42, w: 12.59}, {z: 40.43, w: 12.62}, {z: 40.44, w: 12.65}, {z: 40.45, w: 12.70}, {z: 40.46, w: 12.73}, {z: 40.47, w: 12.76}, {z: 40.48, w: 12.79},
+        {z: 40.49, w: 12.82}, {z: 40.5, w: 12.85}, {z: 40.51, w: 12.89}, {z: 40.52, w: 12.92}, {z: 40.53, w: 12.95}, {z: 40.54, w: 12.98}, {z: 40.55, w: 13.01}, {z: 40.56, w: 13.04}, {z: 40.57, w: 13.08}, {z: 40.58, w: 13.11},
+        {z: 40.59, w: 13.14}, {z: 40.6, w: 13.17}, {z: 40.61, w: 13.20}, {z: 40.62, w: 13.23}, {z: 40.63, w: 13.27}, {z: 40.64, w: 13.30}, {z: 40.65, w: 13.33}, {z: 40.66, w: 13.36}, {z: 40.67, w: 13.39}, {z: 40.68, w: 13.43},
+        {z: 40.69, w: 13.46}, {z: 40.7, w: 13.49}, {z: 40.71, w: 13.52}, {z: 40.72, w: 13.56}, {z: 40.73, w: 13.59}, {z: 40.74, w: 13.62}, {z: 40.75, w: 13.66}, {z: 40.76, w: 13.69}, {z: 40.77, w: 13.72}, {z: 40.78, w: 13.75},
+        {z: 40.79, w: 13.79}, {z: 40.8, w: 13.82}, {z: 40.81, w: 13.85}, {z: 40.82, w: 13.89}, {z: 40.83, w: 13.92}, {z: 40.84, w: 13.96}, {z: 40.85, w: 13.99}, {z: 40.86, w: 14.02}, {z: 40.87, w: 14.06}, {z: 40.88, w: 14.09},
+        {z: 40.89, w: 14.13}, {z: 40.9, w: 14.16}, {z: 40.91, w: 14.19}, {z: 40.92, w: 14.23}, {z: 40.93, w: 14.26}, {z: 40.94, w: 14.30}, {z: 40.95, w: 14.34}, {z: 40.96, w: 14.36}, {z: 40.97, w: 14.40}, {z: 40.98, w: 14.43},
+        {z: 40.99, w: 14.47}, {z: 41.0, w: 14.51}, {z: 41.01, w: 14.55}, {z: 41.02, w: 14.58}, {z: 41.03, w: 14.62}, {z: 41.04, w: 14.65}, {z: 41.05, w: 14.69}, {z: 41.06, w: 14.72}, {z: 41.07, w: 14.76}, {z: 41.08, w: 14.79},
+        {z: 41.09, w: 14.83}, {z: 41.1, w: 14.86}, {z: 41.11, w: 14.90}, {z: 41.12, w: 14.93}, {z: 41.13, w: 14.97}, {z: 41.14, w: 15.01}, {z: 41.15, w: 15.05}, {z: 41.16, w: 15.08}, {z: 41.17, w: 15.12}, {z: 41.18, w: 15.16},
+        {z: 41.19, w: 15.19}, {z: 41.2, w: 15.23}, {z: 41.21, w: 15.27}, {z: 41.22, w: 15.30}, {z: 41.23, w: 15.34}, {z: 41.24, w: 15.38}, {z: 41.25, w: 15.42}, {z: 41.26, w: 15.45}, {z: 41.27, w: 15.49}, {z: 41.28, w: 15.53},
+        {z: 41.29, w: 15.56}, {z: 41.3, w: 15.60}, {z: 41.31, w: 15.64}, {z: 41.32, w: 15.67}, {z: 41.33, w: 15.71}, {z: 41.34, w: 15.75}, {z: 41.35, w: 15.79}, {z: 41.36, w: 15.82}, {z: 41.37, w: 15.86}, {z: 41.38, w: 15.90},
+        {z: 41.39, w: 15.93}, {z: 41.4, w: 15.97}, {z: 41.41, w: 16.01}, {z: 41.42, w: 16.05}, {z: 41.43, w: 16.09}, {z: 41.44, w: 16.13}, {z: 41.45, w: 16.17}, {z: 41.46, w: 16.20}, {z: 41.47, w: 16.24}, {z: 41.48, w: 16.28},
+        {z: 41.49, w: 16.32}, {z: 41.5, w: 16.36}, {z: 41.51, w: 16.40}, {z: 41.52, w: 16.44}, {z: 41.53, w: 16.48}, {z: 41.54, w: 16.52}, {z: 41.55, w: 16.56}, {z: 41.56, w: 16.59}, {z: 41.57, w: 16.63}, {z: 41.58, w: 16.67},
+        {z: 41.59, w: 16.71}, {z: 41.6, w: 16.75}, {z: 41.61, w: 16.79}, {z: 41.7, w: 17.15}, {z: 41.71, w: 17.19}, {z: 41.72, w: 17.23}, {z: 41.73, w: 17.27}, {z: 41.74, w: 17.31}, {z: 41.75, w: 17.36}, {z: 41.76, w: 17.40},
+        {z: 41.77, w: 17.44}, {z: 41.78, w: 17.48}, {z: 41.79, w: 17.52}, {z: 41.8, w: 17.56}, {z: 41.81, w: 17.60}, {z: 41.82, w: 17.64}, {z: 41.83, w: 17.68}, {z: 41.84, w: 17.72}, {z: 41.85, w: 17.77}, {z: 41.86, w: 17.81},
+        {z: 41.87, w: 17.85}, {z: 41.88, w: 17.89}, {z: 41.89, w: 17.93}, {z: 41.9, w: 17.97}, {z: 41.91, w: 18.01}, {z: 41.92, w: 18.06}, {z: 41.93, w: 18.10}, {z: 41.94, w: 18.14}, {z: 41.95, w: 18.19}, {z: 41.96, w: 18.23},
+        {z: 41.97, w: 18.27}, {z: 41.98, w: 18.31}, {z: 41.99, w: 18.36}, {z: 42.0, w: 18.40}, {z: 42.01, w: 18.44}, {z: 42.02, w: 18.49}, {z: 42.03, w: 18.53}, {z: 42.04, w: 18.57}, {z: 42.05, w: 18.62}, {z: 42.06, w: 18.66},
+        {z: 42.07, w: 18.70}, {z: 42.08, w: 18.74}, {z: 42.09, w: 18.79}, {z: 42.1, w: 18.83}, {z: 42.11, w: 18.87}, {z: 42.12, w: 18.92}, {z: 42.13, w: 18.96}, {z: 42.14, w: 19.01}, {z: 42.15, w: 19.05}, {z: 42.16, w: 19.09},
+        {z: 42.17, w: 19.14}, {z: 42.18, w: 19.18}, {z: 42.19, w: 19.23}, {z: 42.2, w: 19.27}, {z: 42.21, w: 19.31}, {z: 42.22, w: 19.36}, {z: 42.23, w: 19.40}, {z: 42.24, w: 19.45}, {z: 42.25, w: 19.49}, {z: 42.26, w: 19.53},
+        {z: 42.27, w: 19.58}, {z: 42.28, w: 19.62}, {z: 42.29, w: 19.67}, {z: 42.3, w: 19.71}, {z: 42.31, w: 19.76}, {z: 42.32, w: 19.80}, {z: 42.33, w: 19.85}, {z: 42.34, w: 19.89}, {z: 42.35, w: 19.94}, {z: 42.36, w: 19.99},
+        {z: 42.37, w: 20.03}, {z: 42.38, w: 20.08}, {z: 42.39, w: 20.12}, {z: 42.4, w: 20.17}, {z: 42.41, w: 20.22}, {z: 42.42, w: 20.26}, {z: 42.43, w: 20.31}, {z: 42.44, w: 20.35}, {z: 42.45, w: 20.40}, {z: 42.46, w: 20.45},
+        {z: 42.47, w: 20.49}, {z: 42.48, w: 21.01}, {z: 42.49, w: 20.58}, {z: 42.5, w: 20.63}, {z: 42.51, w: 20.68}, {z: 42.52, w: 20.72}, {z: 42.53, w: 20.77}, {z: 42.54, w: 20.82}, {z: 42.55, w: 20.87}, {z: 42.56, w: 20.91},
+        {z: 42.57, w: 20.96}, {z: 42.58, w: 21.01}, {z: 42.59, w: 21.05}, {z: 42.6, w: 21.10}, {z: 42.61, w: 21.13}, {z: 42.62, w: 21.16}, {z: 42.63, w: 21.18}, {z: 42.64, w: 21.21}, {z: 42.65, w: 21.24}, {z: 42.66, w: 21.27},
+        {z: 42.67, w: 21.30}, {z: 42.68, w: 21.32}, {z: 42.69, w: 21.35}, {z: 42.7, w: 21.38}, {z: 42.71, w: 21.45}, {z: 42.72, w: 21.52}, {z: 42.73, w: 21.58}, {z: 42.74, w: 21.65}, {z: 42.75, w: 21.72}, {z: 42.76, w: 21.79},
+        {z: 42.77, w: 21.86}, {z: 42.78, w: 21.92}, {z: 42.79, w: 21.99}, {z: 42.8, w: 22.06}, {z: 42.81, w: 22.11}, {z: 42.82, w: 22.16}, {z: 42.83, w: 22.21}, {z: 42.84, w: 22.26}, {z: 42.85, w: 22.31}, {z: 42.86, w: 22.35},
+        {z: 42.87, w: 22.40}, {z: 42.88, w: 22.45}, {z: 42.89, w: 22.50}, {z: 42.9, w: 22.55}, {z: 42.91, w: 22.60}, {z: 42.92, w: 22.65}, {z: 42.93, w: 22.70}, {z: 42.94, w: 22.75}, {z: 42.95, w: 22.80}, {z: 42.96, w: 22.85},
+        {z: 42.97, w: 22.90}, {z: 42.98, w: 22.95}, {z: 42.99, w: 23.00}, {z: 43.0, w: 23.05}, {z: 43.01, w: 23.10}, {z: 43.02, w: 23.15}, {z: 43.03, w: 23.20}, {z: 43.04, w: 23.25}, {z: 43.05, w: 23.31}, {z: 43.06, w: 23.36},
+        {z: 43.07, w: 23.41}, {z: 43.08, w: 23.46}, {z: 43.09, w: 23.51}, {z: 43.1, w: 23.56}, {z: 43.11, w: 23.61}, {z: 43.12, w: 23.66}, {z: 43.13, w: 23.72}, {z: 43.14, w: 23.77}, {z: 43.15, w: 23.81}, {z: 43.16, w: 23.87},
+        {z: 43.17, w: 23.92}, {z: 43.18, w: 23.98}, {z: 43.19, w: 24.03}, {z: 43.2, w: 24.08}, {z: 43.3, w: 24.60}, {z: 43.4, w: 25.13}, {z: 43.5, w: 25.67}, {z: 43.6, w: 26.21}, {z: 43.61, w: 26.27}, {z: 43.62, w: 26.32},
+        {z: 43.63, w: 26.38}, {z: 43.64, w: 26.43}, {z: 43.65, w: 26.49}, {z: 43.66, w: 26.55}, {z: 43.67, w: 26.60}, {z: 43.68, w: 26.66}, {z: 43.69, w: 26.71}, {z: 43.7, w: 26.77}, {z: 43.8, w: 27.33}, {z: 43.9, w: 27.90},
+        {z: 43.91, w: 27.96}, {z: 43.92, w: 28.01}, {z: 43.93, w: 28.07}, {z: 43.94, w: 28.13}, {z: 43.95, w: 28.19}, {z: 43.96, w: 28.24}, {z: 43.97, w: 28.30}, {z: 43.98, w: 28.36}, {z: 43.99, w: 28.41}, {z: 44.0, w: 28.47},
+        {z: 44.1, w: 29.06}, {z: 44.2, w: 29.65}, {z: 44.21, w: 29.71}, {z: 44.22, w: 29.77}, {z: 44.23, w: 29.83}, {z: 44.24, w: 29.89}, {z: 44.25, w: 29.95}, {z: 44.26, w: 30.01}, {z: 44.27, w: 30.07}, {z: 44.28, w: 30.13},
+        {z: 44.29, w: 30.19}, {z: 44.3, w: 30.25}, {z: 44.31, w: 30.31}, {z: 44.32, w: 30.37}, {z: 44.33, w: 30.43}, {z: 44.34, w: 30.49}, {z: 44.35, w: 30.56}, {z: 44.36, w: 30.62}, {z: 44.37, w: 30.68}, {z: 44.38, w: 30.74},
+        {z: 44.39, w: 30.80}, {z: 44.4, w: 30.86}, {z: 44.5, w: 31.47}, {z: 44.51, w: 31.53}, {z: 44.52, w: 31.59}, {z: 44.53, w: 31.66}, {z: 44.54, w: 31.72}, {z: 44.55, w: 31.78}, {z: 44.56, w: 31.84}, {z: 44.57, w: 31.90},
+        {z: 44.58, w: 31.97}, {z: 44.59, w: 32.03}, {z: 44.6, w: 32.09}, {z: 44.7, w: 32.72}, {z: 44.71, w: 32.78}, {z: 44.8, w: 33.36}, {z: 44.81, w: 33.43}, {z: 44.82, w: 33.49}, {z: 44.83, w: 33.56}, {z: 44.84, w: 33.62},
+        {z: 44.85, w: 33.69}, {z: 44.86, w: 33.75}, {z: 44.87, w: 33.82}, {z: 44.88, w: 33.88}, {z: 44.89, w: 33.95}, {z: 44.9, w: 34.01}, {z: 45.0, w: 34.66}, {z: 45.1, w: 35.32}, {z: 45.2, w: 35.99}, {z: 45.3, w: 36.66},
+        {z: 46.0, w: 41.54}
+    ];
+
+    const historical2025Data = {
+        1: 40.35, 2: 40.36, 3: 40.37, 4: 40.38, 5: 40.39, 6: 40.40,
+        7: 40.41, 8: 40.42, 9: 40.43, 10: 40.44, 11: 40.45, 12: 40.46,
+        13: 40.47, 14: 40.48, 15: 40.49, 16: 40.50, 17: 40.48, 18: 40.46,
+        19: 40.44, 20: 40.42, 21: 40.40, 22: 40.39, 23: 40.38, 24: 40.37,
+        25: 40.36, 26: 40.35, 27: 40.35, 28: 40.35, 29: 40.35, 30: 40.35
+    };
+
+    function removeVietnameseTones(str) {
+        str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a");
+        str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ẽ/g,"e");
+        str = str.replace(/ì|í|ị|ỉ|ĩ/g,"i");
+        str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o");
+        str = str.replace(/ù|á|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u");
+        str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g,"y");
+        str = str.replace(/đ/g,"d");
+        str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+        str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ẽ/g, "E");
+        str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+        str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+        str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+        str = str.replace(/Ỳ|Ý|Y|Ỷ|Ỹ/g, "Y");
+        str = str.replace(/Đ/g, "D");
+        return str;
+    }
+
+    function lookupVolume(inputZ) {
+        let z = parseFloat(inputZ);
+        if (isNaN(z)) return 0;
+        if (z <= rawHydroData[0].z) return Math.round(rawHydroData[0].w * 1000000);
+        if (z >= rawHydroData[rawHydroData.length - 1].z) return Math.round(rawHydroData[rawHydroData.length - 1].w * 1000000);
+
+        let exactMatch = rawHydroData.find(item => Math.abs(item.z - z) < 0.0001);
+        if (exactMatch) return Math.round(exactMatch.w * 1000000);
+
+        for (let i = 0; i < rawHydroData.length - 1; i++) {
+            let p1 = rawHydroData[i];
+            let p2 = rawHydroData[i + 1];
+            if (z >= p1.z && z <= p2.z) {
+                let interpolatedW = p1.w + (z - p1.z) * (p2.w - p1.w) / (p2.z - p1.z);
+                return Math.round(interpolatedW * 1000000);
+            }
+        }
+        return 0;
+    }
+
+    function previewVolume(val) {
+        const targetPreview = document.getElementById('volume-preview');
+        if(!val) { targetPreview.innerText = "Dung tích quy đổi: - m³"; return; }
+        targetPreview.innerText = `Dung tích quy đổi: ${lookupVolume(val).toLocaleString('vi-VN')} m³`;
+    }
+
+    function buildBossDropdownMenu() {
+        const menuBody = document.getElementById('boss-dropdown-menu');
+        menuBody.innerHTML = LIST_BOSSES.map(boss => `
+            <li>
+                <div class="dropdown-item boss-dropdown-item d-flex align-items-start gap-2 py-2">
+                    <input type="checkbox" class="form-check-input mt-1 boss-checkbox" id="boss-chk-${boss.id}" value="${boss.id}" onchange="onBossSelectionChange()">
+                    <label class="form-check-label text-wrap" for="boss-chk-${boss.id}">
+                        <div class="fw-bold text-dark small">${boss.name}</div>
+                        <div class="text-muted style-phone" style="font-size: 0.75rem;"><i class="fa-solid fa-phone me-1"></i>${boss.phone}</div>
+                    </label>
+                </div>
+            </li>
+        `).join('');
+    }
+
+    function onBossSelectionChange() {
+        const checkboxes = document.querySelectorAll('.boss-checkbox:checked');
+        const selectedLabel = document.getElementById('selected-boss-label');
+        const dropdownBtn = document.getElementById('dropdownMenuButton');
+
+        if (checkboxes.length === 0) {
+            dropdownBtn.innerHTML = `<i class="fa-solid fa-user-check me-1"></i> Chọn Sếp Nhận BC`;
+            selectedLabel.innerHTML = `Hệ thống chưa chọn Sếp nhận báo cáo. Vui lòng tick chọn tại nút <b class="text-success">"Chọn Sếp Nhận BC"</b> ở góc phải trên.`;
+            return;
+        }
+
+        let selectedNames = [];
+        checkboxes.forEach(chk => {
+            const boss = LIST_BOSSES.find(b => b.id == chk.value);
+            if (boss) {
+                selectedNames.push(`<span class="text-success fw-bold">${boss.name.split(' - ')[0]}</span> (${boss.phone})`);
+            }
+        });
+
+        dropdownBtn.innerHTML = `<i class="fa-solid fa-user-check me-1"></i> Đang chọn (${checkboxes.length})`;
+        selectedLabel.innerHTML = `<i class="fa-solid fa-user-tie me-1 text-success"></i> <b>Danh sách nhận báo cáo:</b> ` + selectedNames.join(', ');
+    }
+
+    function getSelectedBossContacts() {
+        const checkboxes = document.querySelectorAll('.boss-checkbox:checked');
+        let phones = [];
+        let emails = [];
+        checkboxes.forEach(chk => {
+            const boss = LIST_BOSSES.find(b => b.id == chk.value);
+            if (boss) {
+                phones.push(boss.phone);
+                emails.push(boss.email);
+            }
+        });
+        return {
+            phoneString: phones.join(','),
+            emailString: emails.join(','),
+            count: phones.length
+        };
+    }
+
+    window.onload = function() {
+        document.getElementById('input-date-val').value = new Date().toISOString().split('T')[0];
+        buildBossDropdownMenu();
+
+        document.getElementById('hydrologyTableBody').innerHTML = rawHydroData.map(item => `
+            <tr>
+                <td class="fw-bold text-dark">${item.z.toFixed(2)} m</td>
+                <td class="text-secondary">${item.w.toFixed(2)}</td>
+                <td class="text-primary fw-bold">${Math.round(item.w * 1000000).toLocaleString('vi-VN')} m³</td>
+            </tr>
+        `).join('');
+
+        const localCache = localStorage.getItem('bwaco_hydro_v5_storage');
+        if (localCache) {
+            waterData = JSON.parse(localCache);
+            waterData.sort((a, b) => new Date(a.date) - new Date(b.date));
+        }
+        updateUI();
+    };
+
+    // ĐỒNG BỘ CẤU TRÚC HIỂN THỊ TIN NHẮN CÓ DẤU, XUỐNG DÒNG THEO DANH SÁCH
+    function evaluateRowDelta(date) {
+        selectedDateForReport = date;
+        const currentIndex = waterData.findIndex(item => item.date === date);
+        if(currentIndex === -1) return;
+
+        const current = waterData[currentIndex];
+        const currentVol = current.volume ? current.volume : lookupVolume(current.daDen);
+        
+        const d = new Date(current.date);
+        const dayOfMonth = d.getDate();
+        const formattedDate = `${String(dayOfMonth).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        document.getElementById('evaluated-date-tag').innerText = `Ngày đánh giá: ${formattedDate}`;
+
+        let diagnosticHtml = "";
+        let compareString2025 = "";
+        const targetZ_2025 = historical2025Data[dayOfMonth];
+
+        if(currentIndex > 0) {
+            const previous = waterData[currentIndex - 1];
+            const prevVol = previous.volume ? previous.volume : lookupVolume(previous.daDen);
+            const deltaZ_DD = current.daDen - previous.daDen;
+            const deltaW_DD = currentVol - prevVol;
+
+            if(Math.abs(deltaZ_DD) < 0.001) {
+                diagnosticHtml = `Cốt hồ Đá Đen đạt <b>${current.daDen.toFixed(2)} m</b>, <span class="text-primary fw-bold">KHÔNG BIẾN ĐỘNG</span> so với ngày hôm trước. Trữ lượng lòng hồ ổn định ở mức <b>${currentVol.toLocaleString('vi-VN')} m³</b>.`;
+            } else {
+                const trend = deltaZ_DD > 0 ? "TĂNG ↑" : "GIẢM ↓";
+                const color = deltaZ_DD > 0 ? "text-success" : "text-danger";
+                diagnosticHtml = `Cốt hồ Đá Đen đạt <b>${current.daDen.toFixed(2)} m</b> (Biến động <span class="${color} fw-bold">${trend} ${Math.abs(deltaZ_DD).toFixed(2)} m</span>). Dung tích thực thay đổi ${deltaZ_DD > 0 ? '+' : ''}${deltaW_DD.toLocaleString('vi-VN')} m³ (Tổng trữ lượng: <b>${currentVol.toLocaleString('vi-VN')} m³</b>).`;
+            }
+        } else {
+            diagnosticHtml = `Cốt hồ Đá Đen đạt <b>${current.daDen.toFixed(2)} m</b>, dung tích lòng hồ đạt <b>${currentVol.toLocaleString('vi-VN')} m³</b> (Chưa có số liệu ngày liền trước để so sánh).`;
+        }
+        
+        diagnosticHtml += `<br><br>• Hồ Sông Ray thượng nguồn: ${current.songRay.toFixed(2)} m.\n• Lưu lượng kênh dẫn điều tiết: ${current.kenhDan.toFixed(1)} m³/s.`;
+
+        if(targetZ_2025) {
+            const targetW_2025 = lookupVolume(targetZ_2025);
+            const compareDeltaZ = current.daDen - targetZ_2025;
+            const compareDeltaW = currentVol - targetW_2025;
+
+            const trendKeyword = compareDeltaZ >= 0 ? "cao hơn +" : "thấp hơn -";
+            const trendVolKeyword = compareDeltaW >= 0 ? "dư" : "hụt";
+
+            compareString2025 = `${trendKeyword}${Math.abs(compareDeltaZ).toFixed(2)}m, ${trendVolKeyword} ${Math.abs(compareDeltaW).toLocaleString('vi-VN')}m³`;
+        } else {
+            compareString2025 = "Chưa có số liệu cùng kỳ";
+        }
+
+        // Đổ nội dung vào ô phân tích BÊN TRÁI
+        document.getElementById('system-diagnostic-text').innerHTML = diagnosticHtml;
+
+        // ĐỔ NỘI DUNG CÓ DẤU CHUẨN CHỈNH, XUỐNG DÒNG TỪNG HÀNG VÀO Ô BÊN PHẢI 
+        let displayReportText = `- Vị trí kiểm tra: Hệ thống Đá Đen - Sông Ray\n`;
+        displayReportText += `- Ngày báo cáo: ${formattedDate}\n`;
+        displayReportText += `- Cốt hồ Đá Đen: ${current.daDen.toFixed(2)}m, dung tích: ${currentVol.toLocaleString('vi-VN')}m³\n`;
+        displayReportText += `- Cốt hồ Sông Ray: ${current.songRay.toFixed(2)}m\n`;
+        displayReportText += `- Lưu lượng kênh bổ cấp: ${current.kenhDan.toFixed(1)}m³/s\n`;
+        displayReportText += `- So cùng kỳ 2025: ${compareString2025}\n`;
+        displayReportText += `- Người báo cáo: ${current.operator}`;
+
+        document.getElementById('quick-assessment').innerText = displayReportText;
+
+        // Lưu text làm chuỗi dữ liệu truyền nhận chung
+        compiledReportText = displayReportText; 
+    }
+
+    function shareReport(platform) {
+        if(!selectedDateForReport) {
+            alert('Vui lòng chọn một hàng ngày quan trắc dưới Nhật Ký trước!');
+            return;
+        }
+
+        const contacts = getSelectedBossContacts();
+        if(contacts.count === 0) {
+            alert('Vui lòng mở menu xả xuống ở góc trên phải và tick chọn ít nhất một sếp nhận báo cáo!');
+            return;
+        }
+
+        // Zalo và Email giữ Tiếng Việt có dấu, SMS tự chuyển không dấu để tránh lỗi thiết bị cũ
+        let finalOutputText = compiledReportText;
+        if(platform === 'sms') {
+            finalOutputText = removeVietnameseTones(finalOutputText);
+        }
+
+        const uriEncodedText = encodeURIComponent(finalOutputText);
+
+        if(platform === 'zalo') {
+            navigator.clipboard.writeText(finalOutputText).then(() => {
+                alert(`Đã sao chép nội dung báo cáo hệ thống Đá Đen Tiếng Việt thành công!\nHệ thống chuyển hướng sang Zalo, bạn dán (Ctrl+V) gửi cho các sếp vừa được chọn.`);
+                const firstPhone = contacts.phoneString.split(',')[0];
+                window.open(`https://zalo.me/${firstPhone}`, '_blank');
+            }).catch(() => { window.open('https://zalo.me', '_blank'); });
+        } 
+        else if(platform === 'sms') {
+            window.location.href = `sms:${contacts.phoneString}?body=${uriEncodedText}`;
+        } 
+        else if(platform === 'email') {
+            const subject = encodeURIComponent(`[BWACO] Báo cáo quan trắc nguồn nước hệ thống Đá Đen ngày ${selectedDateForReport}`);
+            window.location.href = `mailto:${contacts.emailString}?subject=${subject}&body=${uriEncodedText}`;
+        }
+    }
+
+    function addDailyRecord() {
+        const date = document.getElementById('input-date-val').value;
+        const operator = document.getElementById('input-operator-val').value.trim();
+        const daDen = parseFloat(document.getElementById('input-da-den-val').value);
+        const songRay = parseFloat(document.getElementById('input-song-ray-val').value);
+        const kenhDan = parseFloat(document.getElementById('input-kenh-dan-val').value);
+
+        if (!date || !operator || isNaN(daDen) || isNaN(songRay) || isNaN(kenhDan)) {
+            alert('Vui lòng điền đầy đủ và kiểm tra lại thông số kỹ thuật!');
+            return;
+        }
+
+        const calculatedVolume = lookupVolume(daDen);
+        const d = new Date(date);
+        const formattedDateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+
+        // Đẩy lên Cloud tab Da_den
+        const payloadCloud = {
+            "tenHo": "Da_den",
+            "ngayNhap": formattedDateStr,
+            "nguoiNhap": operator,
+            "cotNuoc": daDen,
+            "ghiChu": `Sông Ray: ${songRay.toFixed(2)}m | Kênh dẫn: ${kenhDan.toFixed(1)}m³/s | Trữ lượng quy đổi: ${calculatedVolume.toLocaleString('vi-VN')}m³`
+        };
+
+        const submitBtn = document.getElementById('btn-submit-form');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> đang đồng bộ dữ liệu...`;
+
+        fetch(GOOGLE_WEBAPP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payloadCloud)
+        })
+        .then(() => {
+            const targetIndex = waterData.findIndex(item => item.date === date);
+            if (targetIndex !== -1) {
+                waterData[targetIndex] = { date, operator, daDen, volume: calculatedVolume, songRay, kenhDan };
+            } else {
+                waterData.push({ date, operator, daDen, volume: calculatedVolume, songRay, kenhDan });
+            }
+
+            waterData.sort((a, b) => new Date(a.date) - new Date(b.date));
+            localStorage.setItem('bwaco_hydro_v5_storage', JSON.stringify(waterData));
+
+            document.getElementById('input-da-den-val').value = '';
+            document.getElementById('input-song-ray-val').value = '';
+            document.getElementById('input-kenh-dan-val').value = '';
+            document.getElementById('volume-preview').innerText = "Dung tích quy đổi: - m³";
+
+            updateUI();
+            evaluateRowDelta(date);
+            alert(`Thành công: Đã ghi nhận số liệu ngày ${formattedDateStr} và đồng bộ trực tuyến lên tab Da_den!`);
+        })
+        .catch(error => {
+            console.error("Lỗi mạng:", error);
+            alert("Không thể truyền dữ liệu tới Cloud. Vui lòng kiểm tra lại kết nối mạng internet!");
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        });
+    }
+
+    function openGoogleSheets() {
+        window.open("https://docs.google.com/spreadsheets/d/1rxTZi7oV2JZYm0rLQcGBExQVUu7YNt0RAWljbwaAI4g/edit?gid=0#gid=0", "_blank");
+    }
+
+    function deleteRecord(index, event) {
+        event.stopPropagation(); 
+        if (confirm(`Bạn muốn xóa bản ghi ngày ${waterData[index].date}?`)) {
+            waterData.splice(index, 1);
+            localStorage.setItem('bwaco_hydro_v5_storage', JSON.stringify(waterData));
+            updateUI();
+        }
+    }
+
+    function clearAllData() {
+        if (confirm('Hành động nguy hiểm: Xóa toàn bộ lịch sử quan trắc thủy văn liên hồ chứa?')) {
+            waterData = [];
+            localStorage.removeItem('bwaco_hydro_v5_storage');
+            updateUI();
+        }
+    }
+
+    function updateUI() {
+        renderTable();
+        renderChart();
+        calculateMetrics();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('dataBody');
+        if (waterData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Chưa có số liệu. Vui lòng nạp dữ liệu mẫu hoặc nhập mới.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = waterData.map((item, index) => {
+            const d = new Date(item.date);
+            const displayDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+            const vol = item.volume ? item.volume : lookupVolume(item.daDen);
+            return `
+                <tr class="clickable-row" onclick="evaluateRowDelta('${item.date}')">
+                    <td><strong class="text-primary">${displayDate}</strong></td>
+                    <td><span class="text-muted small">${item.operator}</span></td>
+                    <td><span class="badge bg-light text-dark border fw-bold">${item.songRay.toFixed(2)} m</span></td>
+                    <td><span class="fw-bold" style="color: #d35400;">${item.kenhDan.toFixed(1)} m³/s</span></td>
+                    <td><span class="badge bg-light text-dark border fw-bold">${item.daDen.toFixed(2)} m</span></td>
+                    <td class="fw-bold text-success">${vol.toLocaleString('vi-VN')}</td>
+                    <td><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteRecord(${index}, event)"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderChart() {
+        const canvas = document.getElementById('waterLevelChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (myChart) myChart.destroy();
+        if (waterData.length === 0) return;
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: waterData.map(item => { const d = new Date(item.date); return `${d.getDate()}/${d.getMonth()+1}`; }),
+                datasets: [
+                    { label: 'Cốt Sông Ray (m) [Trục trái]', data: waterData.map(item => item.songRay), borderColor: '#26a69a', borderDash: [5, 5], tension: 0.1, yAxisID: 'y' },
+                    { label: 'Dòng chảy Kênh dẫn (m³/s) [Trục phải]', data: waterData.map(item => item.kenhDan), borderColor: '#ef6c00', backgroundColor: 'rgba(239, 108, 0, 0.05)', fill: true, tension: 0.1, yAxisID: 'y1' },
+                    { label: 'Cốt Đá Đen (m) [Trục trái]', data: waterData.map(item => item.daDen), borderColor: '#0d47a1', borderWidth: 3, tension: 0.1, yAxisID: 'y' }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { position: 'left' }, y1: { position: 'right', grid: { drawOnChartArea: false } } } }
+        });
+    }
+
+    function calculateMetrics() {
+        if (waterData.length === 0) {
+            document.getElementById('lbl-da-den').innerText = '- m';
+            document.getElementById('lbl-volume-da-den').innerText = '-';
+            document.getElementById('lbl-song-ray').innerText = '- m';
+            document.getElementById('lbl-kenh-dan').innerText = '- m³/s';
+            return;
+        }
+        const latest = waterData[waterData.length - 1];
+        const latestVol = latest.volume ? latest.volume : lookupVolume(latest.daDen);
+
+        document.getElementById('lbl-song-ray').innerText = latest.songRay.toFixed(2) + ' m';
+        document.getElementById('lbl-kenh-dan').innerText = latest.kenhDan.toFixed(1) + ' m³/s';
+        document.getElementById('lbl-da-den').innerText = latest.daDen.toFixed(2) + ' m';
+        document.getElementById('lbl-volume-da-den').innerText = latestVol.toLocaleString('vi-VN');
+        
+        if(!selectedDateForReport) { evaluateRowDelta(latest.date); }
+    }
+
+    function exportToExcel() {
+        if (waterData.length === 0) { alert('Không có chuỗi dữ liệu để xuất báo cáo Excel!'); return; }
+        const structuredRows = waterData.map(item => {
+            const d = new Date(item.date);
+            const formattedDateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+            return {
+                "Ngày tháng": formattedDateStr,
+                "Tên người nhập": item.operator || 'Hệ thống tự động',
+                "Cốt hồ Sông Ray (m)": item.songRay,
+                "Tốc độ dòng chảy Sông Ray về Đá Đen (m3/s)": item.kenhDan,
+                "Cốt hồ Đá Đen (m)": item.daDen,
+                "Khối lượng quy đổi Đá Đen (m3)": item.volume ? item.volume : lookupVolume(item.daDen)
+            };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(structuredRows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "BWACO Lưu Trữ");
+        worksheet['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 22 }, { wch: 38 }, { wch: 22 }, { wch: 25 }];
+        XLSX.writeFile(workbook, "Bao_Cao_Nguon_Nuoc_Da_Den_BWACO.xlsx");
+    }
+
+    function loadSampleData() {
+        waterData = [
+            { date: '2026-06-01', operator: 'Lê Kỹ Thuật A', daDen: 40.35, volume: lookupVolume(40.35), songRay: 72.40, kenhDan: 2.5 },
+            { date: '2026-06-02', operator: 'Trần Văn Trực', daDen: 40.42, volume: lookupVolume(40.42), songRay: 72.10, kenhDan: 2.0 },
+            { date: '2026-06-03', operator: 'Nguyễn Bình Yên', daDen: 40.30, volume: lookupVolume(40.30), songRay: 71.85, kenhDan: 4.5 }
+        ];
+        localStorage.setItem('bwaco_hydro_v5_storage', JSON.stringify(waterData));
+        updateUI();
+        evaluateRowDelta(waterData[waterData.length-1].date);
+        alert('Đã nạp bộ dữ liệu mẫu kiểm chứng cùng kỳ thành công!');
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BWACO | QUẢN TRỊ TÀI SẢN & ĐIỀU XE V12</title>
+    <style>
+        :root { --primary: #0055aa; --accent: #f1c40f; --bg: #f0f2f5; --danger: #e74c3c; --success: #2ecc71; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: var(--bg); font-size: 13px; color: #333; }
+        
+        /* Navbar */
+        .navbar { background: var(--primary); padding: 0 25px; height: 50px; display: flex; align-items: center; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .nav-logo { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+        .dashboard-container { max-width: 1750px; margin: 15px auto; padding: 0 20px; }
+
+        /* Top Blocks */
+        .top-row { display: grid; grid-template-columns: 300px 1fr; gap: 15px; margin-bottom: 15px; }
+        .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        h3 { margin-top: 0; font-size: 13px; color: var(--primary); text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; }
+
+        /* Garage & Car Tags */
+        .garage-area { display: flex; flex-wrap: wrap; gap: 6px; }
+        .car-tag { background: #e3f2fd; color: var(--primary); border: 1px solid #bbdefb; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .car-tag.warn { border: 2px solid var(--danger); background: #fff5f5; color: var(--danger); animation: blink 1.5s infinite; }
+        @keyframes blink { 50% { opacity: 0.6; } }
+
+        /* Form Horizontal */
+        .form-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .form-group { margin-bottom: 8px; }
+        label { display: block; font-weight: 600; font-size: 11px; color: #777; margin-bottom: 4px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; box-sizing: border-box; outline: none; }
+        .btn-select { background: #fff; border: 1px solid var(--primary); color: var(--primary); text-align: left; cursor: pointer; font-weight: 600; }
+        .btn-submit { grid-column: span 5; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 14px; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+        th { background: #f8f9fa; padding: 12px; text-align: left; font-size: 11px; color: #888; border-bottom: 2px solid #eee; }
+        td { padding: 10px 12px; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+        .car-link { color: var(--primary); text-decoration: underline; cursor: pointer; font-weight: 800; }
+        .status-pill { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; color: white; }
+        .bg-road { background: #f39c12; }
+        .bg-done { background: #27ae60; }
+
+        /* Modals */
+        .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
+        .modal-content { background: white; width: 900px; margin: 2% auto; padding: 25px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
+        .tab-nav { display: flex; gap: 10px; border-bottom: 2px solid #eee; margin-bottom: 15px; }
+        .tab-btn { padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 600; color: #777; }
+        .tab-btn.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+        .dest-grid { display: grid; gap: 8px; padding: 10px 0; }
+        .grid-1 { grid-template-columns: 1fr; }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        .opt-item { background: #f8f9fa; padding: 10px; border: 1px solid #eee; border-radius: 6px; text-align: center; cursor: pointer; font-size: 12px; }
+        .opt-item:hover { background: var(--primary); color: white; }
+
+        /* Profile Grid */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .info-item { border-bottom: 1px solid #eee; padding: 5px 0; }
+        .info-label { font-weight: bold; color: #666; width: 160px; display: inline-block; }
+        .alert-tag { color: white; background: var(--danger); padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar"><div class="nav-logo">BWACO CRM | HỆ THỐNG QUẢN LÝ TÀI SẢN & ĐIỀU ĐỘNG ĐỘI XE</div></nav>
+
+<div class="dashboard-container">
+    <div class="top-row">
+        <div class="card">
+            <h3>🏠 XE TẠI GARAGE</h3>
+            <div id="garage-list" class="garage-area"></div>
+        </div>
+
+        <div class="card">
+            <h3>📝 LẬP LỆNH ĐIỀU XE MỚI</h3>
+            <div class="form-grid">
+                <div class="form-group"><label>BIỂN SỐ XE</label><select id="inp-car"><option value="72M-74880">72M-74880</option><option value="72A-12345">72A-12345</option><option value="72A-67890">72A-67890</option><option value="72B-00123">72B-00123</option><option value="72A-55555">72A-55555</option></select></div>
+                <div class="form-group"><label>TÀI XẾ</label><select id="inp-driver"><option value="Nguyễn Văn Hùng">Nguyễn Văn Hùng</option><option value="Lê Công Thành">Lê Công Thành</option><option value="Trần Minh Tâm">Trần Minh Tâm</option></select></div>
+                <div class="form-group"><label>NGƯỜI CHỦ TRÌ</label><input type="text" id="inp-leader" placeholder="Họ tên..."></div>
+                <div class="form-group"><label>ĐIỂM ĐẾN</label><input type="text" id="inp-dest" class="btn-select" readonly onclick="openDest()" placeholder="Bấm chọn địa điểm..."></div>
+                <div class="form-group"><label>SỐ KM ĐI (ODO)</label><input type="number" id="km-start" placeholder="0"></div>
+                
+                <div class="form-group"><label>GIỜ ĐI</label><input type="datetime-local" id="time-start"></div>
+                <div class="form-group"><label>GIỜ VỀ (DK)</label><input type="datetime-local" id="time-end"></div>
+                <div class="form-group"><label>NGƯỜI ĐIỀU ĐỘNG</label><select id="inp-approver"><option>Trưởng phòng TCHC</option><option>Phó phòng TCHC</option></select></div>
+                <div class="form-group" style="grid-column: span 2;"><label>ĐOÀN CÔNG TÁC / NGƯỜI ĐI CÙNG</label><input type="text" id="inp-passengers" placeholder="Danh sách người đi cùng..."></div>
+                
+                <button class="btn-submit" onclick="saveLog()">XÁC NHẬN VÀ LƯU LỆNH ĐIỀU XE</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>📊 NHẬT KÝ ĐIỀU ĐỘNG & THỐNG KÊ CHI PHÍ</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th width="120">BIỂN SỐ</th>
+                    <th width="180">THỜI GIAN</th>
+                    <th width="100">TRẠNG THÁI</th>
+                    <th>NHÂN SỰ (CHỦ TRÌ/TÀI XẾ)</th>
+                    <th>LỘ TRÌNH</th>
+                    <th>KM & XĂNG</th>
+                    <th width="120">THAO TÁC</th>
+                </tr>
+            </thead>
+            <tbody id="log-list"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="modal-dest" class="modal">
+    <div class="modal-content" style="width: 850px;">
+        <h3 style="border:none">CHỌN ĐỊA ĐIỂM ĐẾN</h3>
+        <div class="tab-nav">
+            <button class="tab-btn active" id="t-in" onclick="swTab('in')">TRONG TỈNH (1 CỘT)</button>
+            <button class="tab-btn" id="t-out" onclick="swTab('out')">NGOÀI TỈNH (4 CỘT)</button>
+        </div>
+        <div id="g-in" class="dest-grid grid-1">
+            <div class="opt-item" onclick="setD('Sân bay Tân Sơn Nhất')">SB Tân Sơn Nhất</div>
+            <div class="opt-item" onclick="setD('Bà Rịa')">Bà Rịa</div>
+            <div class="opt-item" onclick="setD('Phú Mỹ')">Phú Mỹ</div>
+            <div class="opt-item" onclick="setD('Châu Đức')">Châu Đức</div>
+            <div class="opt-item" onclick="setD('Long Điền')">Long Điền</div>
+            <div class="opt-item" onclick="setD('Đất Đỏ')">Đất Đỏ</div>
+            <div class="opt-item" onclick="setD('Xuyên Mộc')">Xuyên Mộc</div>
+            <div class="opt-item" onclick="setD('Bình Châu')">Bình Châu</div>
+        </div>
+        <div id="g-out" class="dest-grid grid-4" style="display:none">
+            <div class="opt-item" onclick="setD('TP. Hồ Chí Minh')">TP. Hồ Chí Minh</div>
+            <div class="opt-item" onclick="setD('Bình Dương')">Bình Dương</div>
+            <div class="opt-item" onclick="setD('Đồng Nai')">Đồng Nai</div>
+            <div class="opt-item" onclick="setD('Long An')">Long An</div>
+            <div class="opt-item" onclick="setD('Tiền Giang')">Tiền Giang</div>
+            <div class="opt-item" onclick="setD('Bến Tre')">Bến Tre</div>
+            <div class="opt-item" onclick="setD('Trà Vinh')">Trà Vinh</div>
+            <div class="opt-item" onclick="setD('Vĩnh Long')">Vĩnh Long</div>
+            <div class="opt-item" onclick="setD('Cần Thơ')">Cần Thơ</div>
+            <div class="opt-item" onclick="setD('Hậu Giang')">Hậu Giang</div>
+            <div class="opt-item" onclick="setD('Sóc Trăng')">Sóc Trăng</div>
+            <div class="opt-item" onclick="setD('An Giang')">An Giang</div>
+            <div class="opt-item" onclick="setD('Kiên Giang')">Kiên Giang</div>
+            <div class="opt-item" onclick="setD('Bạc Liêu')">Bạc Liêu</div>
+            <div class="opt-item" onclick="setD('Cà Mau')">Cà Mau</div>
+            <div class="opt-item" onclick="setD('Tây Ninh')">Tây Ninh</div>
+            <div class="opt-item" onclick="setD('Bình Phước')">Bình Phước</div>
+            <div class="opt-item" onclick="setD('Lâm Đồng')">Lâm Đồng</div>
+            <div class="opt-item" onclick="setD('Đắk Nông')">Đắk Nông</div>
+            <div class="opt-item" onclick="setD('Đắk Lắk')">Đắk Lắk</div>
+            <div class="opt-item" onclick="setD('Gia Lai')">Gia Lai</div>
+            <div class="opt-item" onclick="setD('Kon Tum')">Kon Tum</div>
+            <div class="opt-item" onclick="setD('Bình Thuận')">Bình Thuận</div>
+            <div class="opt-item" onclick="setD('Ninh Thuận')">Ninh Thuận</div>
+            <div class="opt-item" onclick="setD('Khánh Hòa')">Khánh Hòa</div>
+            <div class="opt-item" onclick="setD('Phú Yên')">Phú Yên</div>
+            <div class="opt-item" onclick="setD('Bình Định')">Bình Định</div>
+            <div class="opt-item" onclick="setD('Quảng Ngãi')">Quảng Ngãi</div>
+            <div class="opt-item" onclick="setD('Quảng Nam')">Quảng Nam</div>
+            <div class="opt-item" onclick="setD('Đà Nẵng')">Đà Nẵng</div>
+            <div class="opt-item" onclick="setD('Thừa Thiên Huế')">Thừa Thiên Huế</div>
+            <div class="opt-item" onclick="setD('Quảng Trị')">Quảng Trị</div>
+            <div class="opt-item" onclick="setD('Quảng Bình')">Quảng Bình</div>
+            <div class="opt-item" onclick="setD('Hà Tĩnh')">Hà Tĩnh</div>
+        </div>
+        <button onclick="clsM()" style="width:100%; padding:12px; margin-top:15px; border:none; background:#eee; cursor:pointer; border-radius:8px;">HỦY</button>
+    </div>
+</div>
+
+<div id="modal-profile" class="modal">
+    <div class="modal-content">
+        <h3 id="profile-title" style="font-size:18px; border-bottom: 2px solid var(--primary)">HỒ SƠ PHƯƠNG TIỆN</h3>
+        
+        <div id="p-form" style="display:none">
+            <p style="color:var(--danger); font-weight:bold;">* Xe mới: Vui lòng cập nhật thông tin kỹ thuật</p>
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                <div><label>Tên xe</label><input type="text" id="p-name"></div>
+                <div><label>Hãng SX</label><input type="text" id="p-brand"></div>
+                <div><label>Số chỗ</label><input type="number" id="p-seats"></div>
+                <div><label>Năm SX</label><input type="number" id="p-y1"></div>
+                <div><label>Năm vận hành</label><input type="number" id="p-y2"></div>
+                <div><label>Nơi bảo dưỡng</label><input type="text" id="p-place"></div>
+                <div><label>Loại bảo dưỡng</label><select id="p-type"><option>5.000km</option><option>10.000km</option></select></div>
+                <div><label>Lần bảo dưỡng tới</label><input type="date" id="p-next-m"></div>
+                <div><label>Lần kiểm định tới</label><input type="month" id="p-next-r"></div>
+            </div>
+            <button class="btn-submit" onclick="saveProfile()">LƯU HỒ SƠ</button>
+        </div>
+
+        <div id="p-view" style="display:none">
+            <div class="info-grid">
+                <div class="info-item"><span class="info-label">Tên xe / Hãng:</span> <span id="v-name"></span></div>
+                <div class="info-item"><span class="info-label">Số chỗ / Năm SX:</span> <span id="v-info"></span></div>
+                <div class="info-item"><span class="info-label">Bảo dưỡng kế tiếp:</span> <span id="v-m"></span></div>
+                <div class="info-item"><span class="info-label">Kiểm định kế tiếp:</span> <span id="v-r"></span></div>
+                <div class="info-item" style="grid-column: span 2;"><span class="info-label">Nơi bảo dưỡng:</span> <span id="v-place"></span></div>
+            </div>
+            <h4>LỊCH SỬ CHUYẾN ĐI CỦA XE</h4>
+            <div id="v-history" style="max-height:200px; overflow-y:auto; border:1px solid #eee;"></div>
+            <div style="margin-top:15px; display:flex; gap:10px;">
+                <button onclick="clsM()" style="flex:1; padding:10px; cursor:pointer;">ĐÓNG</button>
+                <button onclick="editProfile()" style="flex:1; background:var(--accent); border:none; cursor:pointer;">SỬA HỒ SƠ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const CARS = ["72M-74880", "72A-12345", "72A-67890", "72B-00123", "72A-55555"];
+    let logs = JSON.parse(localStorage.getItem('bwaco_v12_logs')) || [];
+    let profiles = JSON.parse(localStorage.getItem('bwaco_v12_pro')) || {};
+    let currentCar = "";
+
+    function openDest() { document.getElementById('modal-dest').style.display = 'block'; }
+    function clsM() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+    function setD(v) { document.getElementById('inp-dest').value = v; clsM(); }
+    function swTab(t) {
+        document.getElementById('g-in').style.display = t === 'in' ? 'grid' : 'none';
+        document.getElementById('g-out').style.display = t === 'out' ? 'grid' : 'none';
+        document.getElementById('t-in').classList.toggle('active', t === 'in');
+        document.getElementById('t-out').classList.toggle('active', t === 'out');
+    }
+
+    // XỬ LÝ HỒ SƠ XE
+    function openProfile(carNum) {
+        currentCar = carNum;
+        document.getElementById('profile-title').innerText = "HỒ SƠ XE: " + carNum;
+        document.getElementById('modal-profile').style.display = 'block';
+        if(!profiles[carNum]) {
+            document.getElementById('p-form').style.display = 'block';
+            document.getElementById('p-view').style.display = 'none';
+        } else {
+            showView(carNum);
+        }
+    }
+
+    function saveProfile() {
+        profiles[currentCar] = {
+            name: document.getElementById('p-name').value,
+            brand: document.getElementById('p-brand').value,
+            seats: document.getElementById('p-seats').value,
+            y1: document.getElementById('p-y1').value,
+            y2: document.getElementById('p-y2').value,
+            place: document.getElementById('p-place').value,
+            type: document.getElementById('p-type').value,
+            nextM: document.getElementById('p-next-m').value,
+            nextR: document.getElementById('p-next-r').value
+        };
+        localStorage.setItem('bwaco_v12_pro', JSON.stringify(profiles));
+        showView(currentCar);
+        render();
+    }
+
+    function showView(carNum) {
+        const p = profiles[carNum];
+        document.getElementById('p-form').style.display = 'none';
+        document.getElementById('p-view').style.display = 'block';
+        document.getElementById('v-name').innerText = p.name + " / " + p.brand;
+        document.getElementById('v-info').innerText = p.seats + " chỗ / Năm " + p.y1;
+        document.getElementById('v-place').innerText = p.place;
+        
+        const now = new Date();
+        const mDate = new Date(p.nextM);
+        document.getElementById('v-m').innerHTML = p.nextM + (mDate < now ? ' <span class="alert-tag">QUÁ HẠN</span>' : '');
+        document.getElementById('v-r').innerText = p.nextR;
+
+        // Lịch sử riêng xe
+        const hLogs = logs.filter(l => l.car === carNum);
+        let hHtml = "<table>";
+        hLogs.forEach(h => hHtml += `<tr><td>${h.start.split('T')[0]}</td><td>${h.dest}</td><td>${h.leader}</td></tr>`);
+        document.getElementById('v-history').innerHTML = hHtml + "</table>";
+    }
+
+    function editProfile() {
+        const p = profiles[currentCar];
+        document.getElementById('p-name').value = p.name;
+        document.getElementById('p-brand').value = p.brand;
+        document.getElementById('p-next-m').value = p.nextM;
+        document.getElementById('p-form').style.display = 'block';
+        document.getElementById('p-view').style.display = 'none';
+    }
+
+    // XỬ LÝ LỊCH TRÌNH
+    function saveLog() {
+        const entry = {
+            id: Date.now(),
+            car: document.getElementById('inp-car').value,
+            driver: document.getElementById('inp-driver').value,
+            leader: document.getElementById('inp-leader').value,
+            dest: document.getElementById('inp-dest').value,
+            start: document.getElementById('time-start').value,
+            end: document.getElementById('time-end').value,
+            kmStart: document.getElementById('km-start').value,
+            pass: document.getElementById('inp-passengers').value,
+            kmEnd: null
+        };
+
+        if(!entry.start || !entry.end || !entry.dest) { alert("Vui lòng nhập đủ thông tin!"); return; }
+
+        // KIỂM TRA TRÙNG LỊCH
+        const conflict = logs.some(l => {
+            if(l.car !== entry.car) return false;
+            return (new Date(entry.start) < new Date(l.end) && new Date(entry.end) > new Date(l.start));
+        });
+
+        if(conflict) {
+            if(confirm("❌ CẢNH BÁO: Xe này đã có lịch trong thời gian này! Bạn có muốn xóa lịch cũ không?")) {
+                // Tìm và xóa lịch cũ
+                logs = logs.filter(l => !(l.car === entry.car && new Date(entry.start) < new Date(l.end) && new Date(entry.end) > new Date(l.start)));
+            } else {
+                return;
+            }
+        }
+
+        logs.push(entry);
+        localStorage.setItem('bwaco_v12_logs', JSON.stringify(logs));
+        render();
+    }
+
+    function deleteLog(id) {
+        if(confirm("Xóa lệnh điều xe này?")) {
+            logs = logs.filter(l => l.id !== id);
+            localStorage.setItem('bwaco_v12_logs', JSON.stringify(logs));
+            render();
+        }
+    }
+
+    function finishTrip(id) {
+        const km = prompt("Nhập số ODO lúc về:");
+        if(km) {
+            const idx = logs.findIndex(l => l.id === id);
+            logs[idx].kmEnd = km;
+            localStorage.setItem('bwaco_v12_logs', JSON.stringify(logs));
+            render();
+        }
+    }
+
+    function render() {
+        const logBody = document.getElementById('log-list');
+        const garage = document.getElementById('garage-list');
+        logBody.innerHTML = ""; garage.innerHTML = "";
+        const now = new Date();
+        let busy = new Set();
+
+        logs.sort((a,b) => b.id - a.id).forEach(l => {
+            const isRoad = now >= new Date(l.start) && now <= new Date(l.end);
+            if(isRoad) busy.add(l.car);
+            
+            logBody.innerHTML += `
+                <tr>
+                    <td><b class="car-link" onclick="openProfile('${l.car}')">${l.car}</b></td>
+                    <td><small>Từ: ${l.start.replace('T',' ')}<br>Đến: ${l.end.replace('T',' ')}</small></td>
+                    <td><span class="status-pill ${isRoad?'bg-road':'bg-done'}">${isRoad?'ĐANG ĐI':'XONG'}</span></td>
+                    <td><b>${l.leader}</b><br><small>Tài xế: ${l.driver}</small></td>
+                    <td>Vũng Tàu → ${l.dest}</td>
+                    <td>${l.kmEnd ? (l.kmEnd - l.kmStart) + ' Km' : '---'}</td>
+                    <td>
+                        <button onclick="deleteLog(${l.id})" style="color:red; border:none; background:none; cursor:pointer;">Xóa</button>
+                        ${!l.kmEnd ? `<button onclick="finishTrip(${l.id})">Về</button>` : '✔️'}
+                    </td>
+                </tr>
+            `;
+        });
+
+        CARS.forEach(c => {
+            let isWarn = false;
+            if(profiles[c]) {
+                if(new Date(profiles[c].nextM) < now) isWarn = true;
+            }
+            if(!busy.has(c)) {
+                garage.innerHTML += `<div class="car-tag ${isWarn?'warn':''}" onclick="openProfile('${c}')">${c}</div>`;
+            }
+        });
+    }
+    render();
+</script>
+</body>
+</html>

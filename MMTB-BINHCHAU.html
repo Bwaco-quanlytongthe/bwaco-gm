@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BWACO | HỆ THỐNG QUẢN LÝ THIẾT BỊ MẠNG LƯỚI & NHẬT KÝ BẢO TRÌ TÍCH LŨY</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        /* =====================================================================
+           1. THIẾT LẬP NỀN TẢNG & MÀU SẮC CHUẨN BWACO
+           ===================================================================== */
+        :root { 
+            --primary: #1e4b8a; 
+            --accent: #f1c40f; 
+            --bg: #f0f2f5; 
+            --danger: #e74c3c; 
+            --success: #27ae60; 
+            --white: #ffffff;
+            --border: #cccccc;
+            --btn-zalo: #3498db;
+            --btn-viber: #7d66f0;
+            --btn-email: #e67e22;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            transition: all 0.1s ease; 
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            background: var(--bg); 
+            color: #333; 
+            font-size: 13px; 
+            padding-bottom: 60px; 
+        }
+        
+        .navbar { 
+            background: var(--primary); 
+            padding: 0 25px; 
+            height: 60px; 
+            display: flex; 
+            align-items: center; 
+            color: white; 
+            font-weight: bold; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15); 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            font-size: 15px;
+        }
+
+        .container { 
+            max-width: 100%; 
+            margin: 20px auto; 
+            padding: 0 25px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+        }
+        
+        .card-section { 
+            background: var(--white); 
+            border-radius: 12px; 
+            padding: 20px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            border: 1px solid #e2e8f0; 
+        }
+
+        .section-title { 
+            margin-top: 0; 
+            margin-bottom: 15px; 
+            color: var(--primary); 
+            border-bottom: 2px solid #edf2f7; 
+            padding-bottom: 10px; 
+            font-size: 14px; 
+            text-transform: uppercase; 
+            font-weight: bold; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+
+        /* Khung lưới nhập liệu hệ thống */
+        .form-grid-4 { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 15px; 
+        }
+
+        .form-group { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 5px; 
+        }
+        
+        label { 
+            font-weight: 700; 
+            font-size: 11px; 
+            color: #4a5568; 
+            text-transform: uppercase; 
+            letter-spacing: 0.3px; 
+        }
+
+        input, select, textarea { 
+            width: 100%; 
+            padding: 10px 12px; 
+            border: 1px solid var(--border); 
+            border-radius: 6px; 
+            font-size: 13px; 
+            outline: none; 
+            background: #ffffff; 
+        }
+
+        input:focus, select:focus, textarea:focus { 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 3px rgba(30, 75, 138, 0.12); 
+        }
+
+        textarea { 
+            height: 55px; 
+            resize: vertical; 
+        }
+
+        /* Bố cục cấu trúc Phần I ảnh gốc */
+        .profile-layout { 
+            display: grid; 
+            grid-template-columns: 1fr 320px; 
+            gap: 20px; 
+        }
+
+        .profile-main-images { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+        }
+
+        .device-img-card { 
+            width: 100%; 
+            height: 90px; 
+            border: 2px dashed #b8c2cc; 
+            border-radius: 6px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden; 
+            background: #f8fafc; 
+        }
+
+        .device-img-card img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            cursor: zoom-in; 
+        }
+
+        .device-img-card span { 
+            color: #a0aec0; 
+            font-size: 11px; 
+            font-weight: bold; 
+        }
+
+        /* Bộ thanh công cụ lọc dữ liệu một hàng ngang duy nhất */
+        .filter-horizontal { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+            align-items: center; 
+            background: #ebf3fc; 
+            border-radius: 8px; 
+            padding: 10px 15px; 
+            margin-bottom: 15px; 
+            border: 1px solid #cbd5e0; 
+        }
+
+        .filter-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            flex: 1; 
+            min-width: 150px; 
+        }
+
+        .filter-item.search-long { 
+            flex: 1.5; 
+        }
+
+        .filter-item label { 
+            white-space: nowrap; 
+            color: var(--primary); 
+            font-weight: 800; 
+            font-size: 11px; 
+        }
+
+        .filter-input { 
+            padding: 6px 10px; 
+            font-size: 12px; 
+            border-radius: 6px; 
+            border: 1px solid #a0aec0; 
+            width: 100%; 
+        }
+
+        /* Thiết kế bảng quản lý dữ liệu mạng lưới */
+        .table-wrapper { 
+            overflow-x: auto; 
+            border-radius: 8px; 
+            border: 1px solid #edf2f7; 
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: var(--white); 
+        }
+
+        th { 
+            background: #f7fafc; 
+            padding: 12px 10px; 
+            text-align: left; 
+            font-size: 11px; 
+            color: #4a5568; 
+            border-bottom: 2px solid #e2e8f0; 
+            text-transform: uppercase; 
+            font-weight: 700; 
+        }
+
+        td { 
+            padding: 10px; 
+            border-bottom: 1px solid #edf2f7; 
+            vertical-align: middle; 
+            line-height: 1.4; 
+        }
+
+        tr:hover { 
+            background: #f8fafc; 
+        }
+        
+        .mamtb-link { 
+            color: var(--primary); 
+            text-decoration: underline; 
+            cursor: pointer; 
+            font-weight: bold; 
+        }
+
+        /* Thiết kế hệ thống cụm nút ngang bản to nằm cuối dòng bảng lịch sử bảo trì đợt cũ */
+        .alert-btn-horizontal { 
+            display: flex; 
+            gap: 4px; 
+            width: 180px; 
+            justify-content: center; 
+        }
+
+        .btn-channel-sm { 
+            padding: 6px 8px; 
+            border-radius: 4px; 
+            border: none; 
+            color: white; 
+            font-size: 10px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            text-align: center; 
+            text-transform: uppercase; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 3px; 
+        }
+
+        .btn-zalo { background-color: var(--btn-zalo); }
+        .btn-viber { background-color: var(--btn-viber); }
+        .btn-email { background-color: var(--btn-email); }
+
+        /* Bảng lịch sử xử lý bảo trì đợt cũ dưới đáy form */
+        .history-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+        }
+
+        .history-table th { 
+            background: #f0f4f8; 
+            color: var(--primary); 
+            border: 1px solid #cbd5e0; 
+            padding: 10px; 
+            font-size: 11px; 
+        }
+
+        .history-table td { 
+            padding: 10px; 
+            font-size: 12px; 
+            border: 1px solid #cbd5e0; 
+            background: #fff; 
+        }
+
+        .batch-gallery { 
+            display: flex; 
+            gap: 5px; 
+        }
+
+        .batch-gallery img { 
+            width: 70px; 
+            height: 50px; 
+            object-fit: cover; 
+            border-radius: 4px; 
+            border: 1px solid #ddd; 
+            cursor: zoom-in; 
+        }
+
+        .btn-action { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 12px 20px; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            font-size: 13px; 
+            text-transform: uppercase; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
+
+        .btn-action:hover { 
+            background: #153a6d; 
+            transform: translateY(-1px); 
+        }
+
+        .btn-success { background: var(--success); }
+        .btn-secondary { background: #666666; }
+        
+        .btn-delete-log {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .btn-delete-log:hover {
+            background-color: #c0392b;
+        }
+
+        /* KHUNG PHÓNG TO ẢNH MAXIMUM (LIGHTBOX) */
+        .image-lightbox { 
+            display: none; 
+            position: fixed; 
+            z-index: 10000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0, 0, 0, 0.93); 
+            align-items: center; 
+            justify-content: center; 
+            backdrop-filter: blur(6px); 
+        }
+
+        .image-lightbox-content { 
+            max-width: 95%; 
+            max-height: 95%; 
+            object-fit: contain; 
+            animation: lightBoxZoom 0.2s ease; 
+        }
+
+        @keyframes lightBoxZoom { 
+            from { transform: scale(0.8); opacity: 0; } 
+            to { transform: scale(1); opacity: 1; } 
+        }
+
+        .close-lightbox { 
+            position: absolute; 
+            top: 15px; 
+            right: 25px; 
+            color: #ffffff; 
+            font-size: 45px; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar no-print">🏢 BWACO | HỆ THỐNG QUẢN LÝ THIẾT BỊ MẠNG LƯỚI & NHẬT KÝ BẢO TRÌ TÍCH LŨY</nav>
+
+<div class="container">
+    
+    <div class="card-section" id="section-profile-root">
+        <div class="section-title">📂 PHẦN CẬP NHẬT VÀ LƯU TRỮ HỒ SƠ GỐC THIẾT BỊ</div>
+        <div class="profile-layout">
+            
+            <div class="form-grid-4">
+                <div class="form-group">
+                    <label>Mã thiết bị <span style="color:red">*</span></label>
+                    <input type="text" id="inp-id" placeholder="ID thiết bị..." onkeyup="checkExistingProfile(this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Loại thiết bị mạng lưới <span style="color:red">*</span></label>
+                    <input type="text" id="inp-type" placeholder="Bơm, Van, Van xả khí...">
+                </div>
+                <div class="form-group">
+                    <label>Tên cụ thể thiết bị <span style="color:red">*</span></label>
+                    <input type="text" id="inp-name" placeholder="Nhập tên tài sản thiết bị...">
+                </div>
+                <div class="form-group">
+                    <label>Hãng sản xuất</label>
+                    <input type="text" id="inp-brand" placeholder="Siemens, Wilo, Itron, Bermad...">
+                </div>
+
+                <div class="form-group" style="grid-column: span 1;">
+                    <label>Vùng, Khu vực quản lý</label>
+                    <input type="text" id="inp-zone" placeholder="VD: Vùng 2.2...">
+                </div>
+                <div class="form-group" style="grid-column: span 3;">
+                    <label>Địa chỉ, vị trí lắp đặt chi tiết</label>
+                    <input type="text" id="inp-address" placeholder="Địa chỉ tuyến mạng lắp đặt thực tế...">
+                </div>
+
+                <div class="form-group">
+                    <label>Số Serial (Serial Number)</label>
+                    <input type="text" id="inp-serial" placeholder="Nhập số mã định danh serial...">
+                </div>
+                <div class="form-group">
+                    <label>Tuyến ống / Khối khai thác</label>
+                    <input type="text" id="inp-pipeline" placeholder="VD: Tuyến PVC D114...">
+                </div>
+                <div class="form-group">
+                    <label>Tháng, năm đưa vào sử dụng</label>
+                    <input type="month" id="inp-run-date">
+                </div>
+                <div class="form-group">
+                    <label>Tình trạng hoạt động hiện tại</label>
+                    <input type="text" id="inp-status" placeholder="VD: Đang hoạt động, Ổn định, Rò rỉ...">
+                </div>
+
+                <div class="form-group" style="grid-column: span 4;">
+                    <label>Thông số kỹ thuật máy móc thiết bị (Hồ sơ gốc cố định)</label>
+                    <textarea id="inp-specs" placeholder="Thông số kỹ thuật cố định của tài sản..."></textarea>
+                </div>
+                <div style="grid-column: span 4; text-align: right; margin-top: 5px;">
+                    <button class="btn-action btn-success" onclick="saveProfileDataOnly()">💾 Cập nhật HS gốc</button>
+                </div>
+            </div>
+
+            <div class="profile-main-images">
+                <label style="text-align: center; color: var(--primary); font-weight: bold;">Hình ảnh gốc thiết bị</label>
+                <div class="device-img-card" id="main-box-0"><span>HÌNH 1</span></div>
+                <div class="device-img-card" id="main-box-1"><span>HÌNH 2</span></div>
+                <div class="device-img-card" id="main-box-2"><span>HÌNH 3</span></div>
+                <input type="file" id="inp-main-img" accept="image/*" multiple onchange="handleMainDeviceImages(this)" style="display: none;">
+                <button class="btn-action" style="padding: 6px; font-size: 11px; width: 100%;" onclick="document.getElementById('inp-main-img').click()">Cập nhật bộ ảnh gốc</button>
+            </div>
+            
+        </div>
+    </div>
+
+    <div class="card-section">
+        <div class="section-title" style="justify-content: space-between;">
+            <span>📋 DANH MỤC QUẢN LÝ MÁY MÓC THIẾT BỊ & TRẠNG THÁI VẬN HÀNH TOÀN HỆ THỐNG</span>
+            <button class="btn-action btn-success" style="padding: 6px 15px; font-size: 11px;" onclick="exportToExcel()">🟢 Xuất dữ liệu Excel</button>
+        </div>
+
+        <div class="filter-horizontal no-print">
+            <div class="filter-item search-long">
+                <label>🔍 Tìm nhanh:</label>
+                <input type="text" id="filter-search" class="filter-input" placeholder="Mã số, tên gọi, hãng, số serial, vị trí..." onkeyup="executeRealtimeFilter()">
+            </div>
+            <div class="filter-item">
+                <label>🛠️ Loại:</label>
+                <select id="filter-type" class="filter-input" onchange="executeRealtimeFilter()">
+                    <option value="">-- Tất cả --</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label>📍 Vùng:</label>
+                <select id="filter-zone" class="filter-input" onchange="executeRealtimeFilter()">
+                    <option value="">-- Tất cả --</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label>🚰 Tuyến/Khối:</label>
+                <select id="filter-pipeline" class="filter-input" onchange="executeRealtimeFilter()">
+                    <option value="">-- Tất cả --</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label>🔔 Kỳ hạn:</label>
+                <select id="filter-status" class="filter-input" onchange="executeRealtimeFilter()">
+                    <option value="ALL">Tất cả</option>
+                    <option value="NORMAL">🟢 Ổn định</option>
+                    <option value="OVERDUE">⚠️ Đến hạn</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="100">Mã thiết bị</th>
+                        <th width="130">Loại thiết bị</th>
+                        <th>Tên thiết bị mạng</th>
+                        <th width="160">Hãng sản xuất / Serial</th>
+                        <th>Địa chỉ lắp đặt chi tiết</th>
+                        <th width="120" style="text-align:center">Tình trạng hoạt động</th>
+                        <th width="110" style="text-align:center">Tháng/Năm SD</th>
+                        <th width="120" style="text-align:center">Tuyến / Khối</th>
+                    </tr>
+                </thead>
+                <tbody id="network-list-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card-section">
+        <div class="section-title">🛠️ PHẦN CẬP NHẬT NHẬT KÝ BẢO TRÌ, BẢO DƯỠNG</div>
+        
+        <div class="form-grid-4">
+            <div class="form-group">
+                <label>Mã thiết bị (Đồng bộ hệ thống)</label>
+                <input type="text" id="inp-log-id" readonly style="background: #e2e8f0; font-weight: bold; color: var(--primary);" placeholder="Chọn mã bên trên...">
+            </div>
+            <div class="form-group">
+                <label>Cán bộ phụ trách (Chủ trì) <span style="color:red">*</span></label>
+                <input type="text" id="inp-leader" placeholder="Tên người phụ trách chính...">
+            </div>
+            <div class="form-group">
+                <label>Số điện thoại</label>
+                <input type="text" id="inp-leader-phone" placeholder="SĐT cán bộ nhận tin...">
+            </div>
+            <div class="form-group">
+                <label>Email liên hệ</label>
+                <input type="email" id="inp-leader-email" placeholder="Địa chỉ Email nhận báo cáo...">
+            </div>
+            <div class="form-group" style="grid-column: span 4;">
+                <label>Người tham gia công tác bảo trì, bảo dưỡng</label>
+                <input type="text" id="inp-members" placeholder="Danh sách nhân viên, công nhân phối hợp hiện trường...">
+            </div>
+            <div class="form-group">
+                <label>Ngày bảo dưỡng lần này</label>
+                <input type="date" id="date-last">
+            </div>
+            <div class="form-group">
+                <label>Ngày bảo dưỡng tiếp theo <span style="color:red">*</span></label>
+                <input type="date" id="date-next">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label>Nội dung bảo dưỡng thực tế</label>
+                <input type="text" id="inp-content" placeholder="Mô tả hạng mục xử lý đợt này (vệ sinh lưới lọc, thay gioăng...)">
+            </div>
+            <div class="form-group" style="grid-column: span 4;">
+                <label style="color:#e67e22; font-weight: bold;">Tải ảnh hiện trường cho đợt bảo dưỡng này (Tối đa 3 ảnh):</label>
+                <input type="file" id="inp-log-img" accept="image/*" multiple>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 15px; justify-content: space-between; align-items: center;">
+             <div id="embedded-history-zone" style="display: none; flex: 1;">
+                 <h4 style="color: var(--primary); margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">📜 LỊCH SỬ BẢO TRÌ CỦA THIẾT BỊ NÀY, TỪNG ĐỢT:</h4>
+             </div>
+             <div style="display: flex; gap: 10px;">
+                <button class="btn-action btn-success" onclick="processDataSaving()">📥 Cập nhật & lưu nhật ký</button>
+                <button class="btn-action btn-secondary" onclick="clearForm()">🔄 Làm trống form</button>
+             </div>
+        </div>
+
+        <div id="history-table-container"></div>
+    </div>
+    
+</div>
+
+<div id="lightbox-container" class="image-lightbox" onclick="closeImageLightbox()">
+    <span class="close-lightbox" onclick="closeImageLightbox()">&times;</span>
+    <img id="lightbox-target-image" class="image-lightbox-content" src="" alt="Lightbox View">
+</div>
+
+<script>
+    /* =====================================================================
+       CƠ CHẾ JAVASCRIPT ĐỒNG BỘ HOÀN MỸ - KHÓA AN TOÀN CHO HỒ SƠ ẢNH GỐC
+       ===================================================================== */
+    
+    let networkProfiles = JSON.parse(localStorage.getItem('bwaco_net_profiles')) || {};
+    let networkLogs = JSON.parse(localStorage.getItem('bwaco_net_logs')) || [];
+    let tempMainImagesArray = []; 
+    let filteredDeviceIds = []; 
+    let isUploadingImage = false; // Biến cờ chặn hàm check ngầm xóa nhầm bộ ảnh gốc khi người dùng đang chọn tệp
+
+    // Đồng bộ thông tin và đưa màn hình cuộn mượt lên Phân hệ I hồ sơ tài sản
+    function populateDataToForm(id) {
+        if(!networkProfiles[id]) {
+            return;
+        }
+        document.getElementById('inp-id').value = id;
+        document.getElementById('inp-log-id').value = id;
+        
+        checkExistingProfile(id);
+        document.getElementById('section-profile-root').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function checkExistingProfile(id) {
+        if (isUploadingImage) return;
+
+        const trimmedId = id.trim();
+        const p = networkProfiles[trimmedId];
+        
+        if(p) {
+            document.getElementById('inp-type').value = p.type || "";
+            document.getElementById('inp-name').value = p.name || "";
+            document.getElementById('inp-brand').value = p.brand || ""; // Đồng bộ Hãng sản xuất
+            document.getElementById('inp-serial').value = p.serial || ""; // Đồng bộ Số Serial
+            document.getElementById('inp-zone').value = p.zone || "";
+            document.getElementById('inp-pipeline').value = p.pipeline || "";
+            document.getElementById('inp-address').value = p.address || "";
+            document.getElementById('inp-run-date').value = p.runDate || "";
+            document.getElementById('inp-status').value = p.status || "";
+            document.getElementById('inp-specs').value = p.specs || "";
+            
+            document.getElementById('inp-log-id').value = trimmedId;
+            document.getElementById('inp-leader').value = p.leader || "";
+            document.getElementById('inp-leader-phone').value = p.phone || "";
+            document.getElementById('inp-leader-email').value = p.email || "";
+            
+            // Phục hồi và hiển thị trọn vẹn bộ ảnh gốc tài sản cố định từ cơ sở dữ liệu trình duyệt lên 3 ô trái
+            resetMainImagePreviews();
+            if(p.mainImgs && Array.isArray(p.mainImgs) && p.mainImgs.length > 0) {
+                tempMainImagesArray = [...p.mainImgs];
+                p.mainImgs.forEach(function(img, idx) {
+                    if(idx < 3 && img) {
+                        document.getElementById(`main-box-${idx}`).innerHTML = `<img src="${img}" onclick="openImageLightbox(this.src)" title="Xem ảnh to kích thước lớn">`;
+                    }
+                });
+            } else { 
+                tempMainImagesArray = []; 
+            }
+            
+            renderEmbeddedHistoryTable(trimmedId);
+        } else {
+            resetMainImagePreviews(); 
+            tempMainImagesArray = [];
+            document.getElementById('history-table-container').innerHTML = "";
+            document.getElementById('embedded-history-zone').style.display = 'none';
+        }
+    }
+
+    // Kết xuất bảng lịch sử bảo trì định kỳ có chứa bộ ảnh và cụm nút báo cáo ngang bản to ở cuối dòng
+    function renderEmbeddedHistoryTable(trimmedId) {
+        const container = document.getElementById('history-table-container');
+        const logs = networkLogs.filter(function(l) {
+            return l.networkId === trimmedId;
+        }).sort(function(a, b) { 
+            return b.timestamp - a.timestamp; 
+        });
+        
+        if(logs.length > 0) {
+            document.getElementById('embedded-history-zone').style.display = 'block';
+            
+            let hTable = `<table class="history-table">
+                <thead>
+                    <tr>
+                        <th width="100">Ngày làm</th>
+                        <th width="110">Hạn bảo trì tới</th>
+                        <th>Nội dung chi tiết đợt bảo dưỡng sửa chữa</th>
+                        <th width="180">Nhân sự phụ trách</th>
+                        <th width="230">Hình ảnh đợt này (ảnh 1,2,3)</th>
+                        <th width="190" class="no-print">Gửi thông báo báo cáo cấp tốc</th>
+                        <th width="70" class="no-print">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+                
+            logs.forEach(function(l) {
+                let imgHtml = "";
+                if(l.imgs && l.imgs.length > 0) {
+                    imgHtml = `<div class="batch-gallery">`;
+                    l.imgs.forEach(function(imgSrc) {
+                        imgHtml += `<img src="${imgSrc}" onclick="openImageLightbox(this.src)">`;
+                    });
+                    imgHtml += `</div>`;
+                } else {
+                    imgHtml = `<span style="color:#aaa; font-style:italic;">Không có ảnh đính kèm đợt này</span>`;
+                }
+                
+                let workDateFormated = l.workDate.split('-').reverse().join('/');
+                let nextDateFormated = l.nextDate.split('-').reverse().join('/');
+                const p = networkProfiles[trimmedId] || {};
+
+                hTable += `<tr>
+                    <td style="text-align:center"><b>${workDateFormated}</b></td>
+                    <td style="text-align:center; color:#e67e22; font-weight:bold">📅 ${nextDateFormated}</td>
+                    <td>${l.content}</td>
+                    <td><b>👤 Chủ trì: ${l.leader}</b><br><small style="color:#666">Hỗ trợ: ${l.members || '---'}</small></td>
+                    <td>${imgHtml}</td>
+                    <td class="no-print">
+                        <div class="alert-btn-horizontal">
+                            <button class="btn-channel-sm btn-zalo" onclick="triggerAlert('zalo','${trimmedId}','${l.nextDate}','${p.phone}','${l.leader}','${p.email}')">💬 Zalo</button>
+                            <button class="btn-channel-sm btn-viber" onclick="triggerAlert('viber','${trimmedId}','${l.nextDate}','${p.phone}','${l.leader}','${p.email}')">💜 Viber</button>
+                            <button class="btn-channel-sm btn-email" onclick="triggerAlert('email','${trimmedId}','${l.nextDate}','${p.phone}','${l.leader}','${p.email}')">✉️ Email</button>
+                        </div>
+                    </td>
+                    <td style="text-align:center" class="no-print">
+                        <button class="btn-delete-log" onclick="deleteHistoryLogEntry(${l.timestamp}, '${trimmedId}')">🗑️ Xóa</button>
+                    </td>
+                </tr>`;
+            });
+            
+            container.innerHTML = hTable + `</tbody></table>`;
+        } else { 
+            container.innerHTML = ""; 
+            document.getElementById('embedded-history-zone').style.display = 'none'; 
+        }
+    }
+
+    function deleteHistoryLogEntry(ts, id) {
+        if(confirm("⚠️ Xác nhận thao tác: Bạn có chắc chắn muốn xóa dòng nhật ký lịch sử đợt bảo trì này không?")) {
+            networkLogs = networkLogs.filter(function(l) { return l.timestamp !== ts; });
+            localStorage.setItem('bwaco_net_logs', JSON.stringify(networkLogs));
+            renderEmbeddedHistoryTable(id); renderMainTable();
+        }
+    }
+
+    function resetMainImagePreviews() { 
+        for(let i = 0; i < 3; i++) document.getElementById(`main-box-${i}`).innerHTML = `<span>HÌNH ${i+1}</span>`; 
+    }
+
+    function handleMainDeviceImages(input) {
+        if (!input.files || input.files.length === 0) return;
+        const files = Array.from(input.files).slice(0, 3);
+        
+        isUploadingImage = true; // Khóa cờ bảo vệ chống lệnh xóa ngầm khi file đang nạp dữ liệu base64
+        tempMainImagesArray = []; 
+        resetMainImagePreviews();
+        
+        let loadedCount = 0;
+        files.forEach(function(file, index) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 500; canvas.height = img.height * (500 / img.width);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    const b64 = canvas.toDataURL('image/jpeg', 0.7);
+                    document.getElementById(`main-box-${index}`).innerHTML = `<img src="${b64}" onclick="openImageLightbox(this.src)">`;
+                    tempMainImagesArray[index] = b64;
+                    
+                    loadedCount++;
+                    if(loadedCount === files.length) {
+                        isUploadingImage = false; // Mở khóa khi hoàn thành nạp ảnh
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Nút lưu độc lập dành riêng cho việc cập nhật chỉnh sửa Hồ sơ gốc Phần I
+    function saveProfileDataOnly() {
+        const id = document.getElementById('inp-id').value.trim();
+        const name = document.getElementById('inp-name').value.trim();
+        const type = document.getElementById('inp-type').value.trim();
+        
+        if(!id || !name || !type) { 
+            alert("⚠️ Vui lòng nhập đầy đủ các trường bắt buộc: Mã thiết bị, Loại thiết bị và Tên cụ thể thiết bị!"); 
+            return; 
+        }
+        
+        let finalImgs = tempMainImagesArray.filter(function(x) { return x !== undefined; });
+        if(finalImgs.length === 0 && networkProfiles[id] && networkProfiles[id].mainImgs) {
+            finalImgs = networkProfiles[id].mainImgs;
+        }
+
+        networkProfiles[id] = {
+            type: type,
+            name: name,
+            brand: document.getElementById('inp-brand').value.trim(), // Khóa trường Hãng
+            serial: document.getElementById('inp-serial').value.trim(), // Khóa trường Serial
+            zone: document.getElementById('inp-zone').value.trim(),
+            pipeline: document.getElementById('inp-pipeline').value.trim(),
+            address: document.getElementById('inp-address').value.trim(),
+            runDate: document.getElementById('inp-run-date').value,
+            status: document.getElementById('inp-status').value.trim() || "Đang hoạt động",
+            specs: document.getElementById('inp-specs').value.trim(),
+            mainImgs: finalImgs,
+            leader: networkProfiles[id]?.leader || "", phone: networkProfiles[id]?.phone || "", email: networkProfiles[id]?.email || ""
+        };
+        
+        localStorage.setItem('bwaco_net_profiles', JSON.stringify(networkProfiles));
+        alert("✅ HỆ THỐNG THÔNG BÁO: Đã lưu dữ liệu và khóa bộ ảnh gốc vào hồ sơ tài sản thành công!"); 
+        buildFilterDropdownOptions(); renderMainTable();
+    }
+
+    function readLogImages(input) {
+        return new Promise(function(resolve) {
+            if (!input.files || input.files.length === 0) { resolve([]); return; }
+            const files = Array.from(input.files).slice(0, 3);
+            const imgs = []; let count = 0;
+            files.forEach(function(f, i) {
+                const r = new FileReader();
+                r.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const cv = document.createElement('canvas');
+                        cv.width = 500; cv.height = img.height * (500 / img.width);
+                        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+                        imgs[i] = cv.toDataURL('image/jpeg', 0.7);
+                        count++; if (count === files.length) resolve(imgs.filter(function(x) { return x; }));
+                    };
+                    img.src = e.target.result;
+                };
+                r.readAsDataURL(f);
+            });
+        });
+    }
+
+    // Phần II: Lưu trữ dòng nhật ký đợt kiểm tra mới kèm bộ ảnh hiện trường độc lập
+    async function processDataSaving() {
+        const id = document.getElementById('inp-log-id').value.trim();
+        const next = document.getElementById('date-next').value;
+        const work = document.getElementById('date-last').value || new Date().toISOString().split('T')[0];
+        
+        if(!id || id.includes("Chọn") || !next) { 
+            alert("⚠️ Vui lòng click chọn một mã thiết bị cụ thể dưới bảng danh mục và nhập Hạn tiếp theo!"); 
+            return; 
+        }
+
+        const isDuplicate = networkLogs.some(function(l) { return l.networkId === id && l.workDate === work; });
+        if(isDuplicate) { alert(`⚠️ CHẶN TRÙNG NGÀY: Thiết bị mã [ ${id} ] đã được ghi nhật ký cho ngày ${work.split('-').reverse().join('/')}.`); return; }
+
+        if(!document.getElementById('inp-leader').value.trim()) {
+            alert("⚠️ Vui lòng điền thông tin Cán bộ phụ trách (Chủ trì) thực hiện đợt bảo dưỡng!");
+            return;
+        }
+
+        const logImgs = await readLogImages(document.getElementById('inp-log-img'));
+        
+        if(networkProfiles[id]) {
+            networkProfiles[id].leader = document.getElementById('inp-leader').value.trim();
+            networkProfiles[id].phone = document.getElementById('inp-leader-phone').value.trim();
+            networkProfiles[id].email = document.getElementById('inp-leader-email').value.trim();
+            localStorage.setItem('bwaco_net_profiles', JSON.stringify(networkProfiles));
+        }
+
+        networkLogs.push({
+            timestamp: Date.now(), networkId: id, workDate: work, nextDate: next,
+            content: document.getElementById('inp-content').value.trim() || "Kiểm tra bảo dưỡng định kỳ tại hiện trường.",
+            leader: document.getElementById('inp-leader').value.trim(), 
+            members: document.getElementById('inp-members').value.trim(), 
+            imgs: logImgs
+        });
+        
+        localStorage.setItem('bwaco_net_logs', JSON.stringify(networkLogs));
+        alert("✅ HỆ THỐNG THÔNG BÁO: Đã ghi nhận đợt bảo dưỡng mới thành công!"); 
+        renderMainTable(); renderEmbeddedHistoryTable(id);
+        document.getElementById('date-last').value = ""; document.getElementById('inp-content').value = ""; document.getElementById('inp-log-img').value = "";
+    }
+
+    function clearForm() {
+        document.getElementById('inp-id').value = ""; document.getElementById('inp-type').value = ""; document.getElementById('inp-name').value = ""; document.getElementById('inp-brand').value = ""; document.getElementById('inp-zone').value = ""; document.getElementById('inp-pipeline').value = ""; document.getElementById('inp-address').value = ""; document.getElementById('inp-run-date').value = ""; document.getElementById('inp-status').value = ""; document.getElementById('date-last').value = ""; document.getElementById('date-next').value = ""; document.getElementById('inp-leader').value = ""; document.getElementById('inp-leader-phone').value = ""; document.getElementById('inp-leader-email').value = ""; document.getElementById('inp-members').value = ""; document.getElementById('inp-specs').value = ""; document.getElementById('inp-content').value = ""; document.getElementById('inp-log-img').value = ""; document.getElementById('inp-main-img').value = ""; document.getElementById('inp-serial').value = "";
+        document.getElementById('inp-log-id').value = "Chọn mã bên trên..."; document.getElementById('history-table-container').innerHTML = ""; document.getElementById('embedded-history-zone').style.display = 'none'; 
+        tempMainImagesArray = []; resetMainImagePreviews();
+    }
+
+    function triggerAlert(channel, id, nextDate, phone, leader, email) {
+        if(!phone && channel !== 'email') { alert("⚠️ Thiết bị trống trường SĐT của người phụ trách!"); return; }
+        let dateFormated = nextDate.split('-').reverse().join('/');
+        const msg = `BWACO THÔNG BÁO CẤP TỐC: Thiết bị mang mã số ${id} đã đến hạn kỳ kiểm tra định kỳ xử lý vào ngày ${dateFormated}. Cán bộ phụ trách xử lý: ${leader}. Vui lòng rà soát kiểm tra hiện trường kịp thời.`;
+        if(channel === 'zalo') window.open(`https://zalo.me/${phone}`, '_blank');
+        if(channel === 'viber') window.open(`viber://chat?number=${phone.replace(/^0/, '+84')}`, '_blank');
+        if(channel === 'email') {
+            if(!email || email === '---') { alert("⚠️ Thiết bị trống trường Email người nhận!"); return; }
+            window.location.href = `mailto:${email}?subject=THÔNG BÁO HẠN BẢO TRÌ THIẾT BỊ MẠNG LƯỚI ${id}&body=${encodeURIComponent(msg)}`;
+        }
+    }
+
+    function buildFilterDropdownOptions() {
+        const ts = new Set(), zs = new Set(), ps = new Set();
+        Object.keys(networkProfiles).forEach(function(id) {
+            const p = networkProfiles[id];
+            if(p.type) ts.add(p.type.trim()); if(p.zone) zs.add(p.zone.trim()); if(p.pipeline) ps.add(p.pipeline.trim());
+        });
+        updateSelectElement('filter-type', ts, '-- Tất cả --'); updateSelectElement('filter-zone', zs, '-- Tất cả --'); updateSelectElement('filter-pipeline', ps, '-- Tất cả --');
+    }
+
+    function updateSelectElement(eid, set, def) {
+        const s = document.getElementById(eid); const val = s.value; s.innerHTML = `<option value="">${def}</option>`;
+        Array.from(set).sort().forEach(function(i) { const o = document.createElement('option'); o.value = i; o.textContent = i; if(i === val) o.selected = true; s.appendChild(o); });
+    }
+
+    function executeRealtimeFilter() {
+        const sk = document.getElementById('filter-search').value.toLowerCase().trim();
+        const st = document.getElementById('filter-type').value;
+        const sz = document.getElementById('filter-zone').value;
+        const sp = document.getElementById('filter-pipeline').value;
+        const ss = document.getElementById('filter-status').value;
+        
+        const tbody = document.getElementById('network-list-body'); tbody.innerHTML = "";
+        const now = new Date(); filteredDeviceIds = [];
+
+        Object.keys(networkProfiles).forEach(function(id) {
+            const p = networkProfiles[id];
+            const logs = networkLogs.filter(function(l) { return l.networkId === id; }).sort(function(a,b) { return b.timestamp - a.timestamp; });
+            const latest = logs[0] || { nextDate: '---' };
+            const isOverdue = latest.nextDate !== '---' && new Date(latest.nextDate) <= now;
+
+            const matchKeyword = !sk || id.toLowerCase().includes(sk) || p.name.toLowerCase().includes(sk) || p.address.toLowerCase().includes(sk) || (p.brand && p.brand.toLowerCase().includes(sk)) || (p.serial && p.serial.toLowerCase().includes(sk));
+            const matchType = !st || p.type === st;
+            const matchZone = !sz || p.zone === sz;
+            const matchPipeline = !sp || p.pipeline === sp;
+            let matchStatus = true; if(ss === 'OVERDUE') matchStatus = isOverdue; if(ss === 'NORMAL') matchStatus = !isOverdue;
+
+            if(matchKeyword && matchType && matchZone && matchPipeline && matchStatus) {
+                filteredDeviceIds.push(id);
+                let runDateFormated = p.runDate ? p.runDate.split('-').reverse().join('/') : '---';
+                let brandSerialInfo = `<b>${p.brand || '---'}</b><br><small style="color:#666">SN: ${p.serial || '---'}</small>`;
+
+                // 🔥 THỂ HIỆN SƠ ĐỒ MỚI: Tách rạch ròi Tháng năm sử dụng và Tuyến/Khối, thêm cột Tình trạng
+                tbody.innerHTML += `<tr>
+                    <td><b class="mamtb-link" onclick="populateDataToForm('${id}')">${id}</b></td>
+                    <td><span style="font-weight:700; background:#edf2f7; padding:4px 8px; border-radius:6px;">${p.type}</span></td>
+                    <td><b>${p.name}</b></td>
+                    <td>${brandSerialInfo}</td>
+                    <td><small>📍 ${p.address || '---'}</small></td>
+                    <td style="text-align:center"><span style="color:#1e4b8a; font-weight:bold">${p.status || 'Ổn định'}</span></td>
+                    <td style="text-align:center"><small><b>${runDateFormated}</b></small></td>
+                    <td style="text-align:center"><small style="color:#e67e22; font-weight:bold">𚰰 ${p.pipeline || '---'}</small></td>
+                </tr>`;
+            }
+        });
+        if(filteredDeviceIds.length === 0) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 25px; color:#aaa; font-weight:bold;">Không tìm thấy kết quả thiết bị phù hợp!</td></tr>`;
+    }
+
+    function renderMainTable() { executeRealtimeFilter(); }
+    
+    function exportToExcel() {
+        if(filteredDeviceIds.length === 0) return;
+        const rows = filteredDeviceIds.map(function(id, index) {
+            const p = networkProfiles[id]; const logs = networkLogs.filter(function(l) { return l.networkId === id; }).sort(function(a,b) { return b.timestamp - a.timestamp; });
+            return { "STT": index + 1, "Mã thiết bị": id, "Loại thiết bị": p.type, "Tên tài sản thiết bị": p.name, "Hãng sản xuất": p.brand || '---', "Số Serial": p.serial || '---', "Địa chỉ lắp đặt": p.address, "Vùng khu vực": p.zone, "Tuyến ống/Khối": p.pipeline, "Tình trạng hoạt động hiện tại": p.status, "Tháng Năm đưa vào sử dụng": p.runDate, "Hạn bảo trì kế tiếp": logs[0]?.nextDate || '---', "Cán bộ phụ trách chính": p.leader };
+        });
+        const ws = XLSX.utils.json_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "BWACO_Data");
+        XLSX.writeFile(wb, "BWACO_Danh_Muc_Thiet_Bi.xlsx");
+    }
+
+    function openImageLightbox(src) { document.getElementById('lightbox-target-image').src = src; document.getElementById('lightbox-container').style.display = 'flex'; }
+    function closeImageLightbox() { document.getElementById('lightbox-container').style.display = 'none'; }
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeImageLightbox(); });
+</script>
+
+</body>
+</html>

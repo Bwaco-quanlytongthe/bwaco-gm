@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Đào Tạo & Khảo Sát Kiến Thức Tổng Hợp BWACO</title>
+    <style>
+        :root {
+            --primary: #0066cc;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f1c40f;
+            --dark: #2c3e50;
+            --bg: #f4f7f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .main-layout {
+            display: block;
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 0;
+            font-size: 22px;
+            text-transform: uppercase;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .header-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #e9ecef;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .timer-box {
+            color: var(--danger);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-pause {
+            background: var(--dark);
+            color: #fff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .category-badge {
+            background: #34495e;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #dee2e6;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .progress {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 19px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            color: #1a202c;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .option-item {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .option-item:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .option-item.correct {
+            background: #d4edda !important;
+            border-color: var(--success) !important;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .option-item.wrong {
+            background: #f8d7da !important;
+            border-color: var(--danger) !important;
+            color: #721c24;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 8px;
+            display: none;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .feedback.correct-view {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border-left: 5px solid var(--success);
+        }
+
+        .feedback.wrong-view {
+            display: block;
+            background: #fff3cd;
+            color: #856404;
+            border-left: 5px solid var(--warning);
+        }
+
+        .action-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-primary-action {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-skip-action {
+            background: #e2e8f0;
+            color: #4a5568;
+            border: 2px solid #cbd5e0;
+        }
+
+        .qr-widget {
+            background: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-top: 20px;
+            border-top: 4px solid var(--primary);
+        }
+
+        .pause-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pause-modal {
+            background: #fff;
+            padding: 35px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 450px;
+        }
+
+        .result-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .rank-box {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 25px 0;
+            padding: 15px;
+            border-radius: 8px;
+            text-transform: uppercase;
+        }
+
+        .rank-xuatsac { background: #d4edda; color: #155724; }
+        .rank-cao { background: #cce5ff; color: #004085; }
+        .rank-tot { background: #d1ecf1; color: #0c5460; }
+        .rank-hoanthanh { background: #fff3cd; color: #856404; }
+        .rank-ontap { background: #f8d7da; color: #721c24; }
+        .rank-chuadat { background: #e2e3e5; color: #383d41; }
+
+        @media (min-width: 850px) {
+            .main-layout {
+                display: grid;
+                grid-template-columns: 1fr 260px;
+                gap: 20px;
+            }
+            .qr-widget { margin-top: 0; position: sticky; top: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-layout">
+    <div class="container">
+        <h1>Khảo Sát Kiến Thức Tổng Hợp BWACO</h1>
+        
+        <div id="quiz-area">
+            <div class="header-status">
+                <div>Câu hỏi thực tế: <span id="q-number">1</span> / 100 <span id="skipped-badge" style="color:var(--primary); font-weight:bold; margin-left:10px;"></span></div>
+                <div class="category-badge" id="q-category">Văn hóa doanh nghiệp</div>
+                <div class="timer-box">
+                    ⏱️ <span id="timer-display">120:00</span>
+                    <button class="btn-pause" onclick="togglePause()">Tạm dừng</button>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress" id="progress-line"></div>
+            </div>
+
+            <div class="question-text" id="question-target">Đang tải câu hỏi...</div>
+            <ul class="options-list" id="options-target"></ul>
+            
+            <div class="feedback" id="feedback-target"></div>
+            
+            <div class="action-group">
+                <button class="btn-action btn-skip-action" id="btn-skip" onclick="skipQuestion()">Bỏ qua & làm sau ↩</button>
+                <button class="btn-action btn-primary-action" id="btn-next" style="display: none;" onclick="goToNext()">Tiếp tục câu sau ➡️</button>
+            </div>
+        </div>
+
+        <div class="result-screen" id="result-area">
+            <h2>KẾT QUẢ KHẢO SÁT HỆ THỐNG</h2>
+            <div style="font-size: 56px; font-weight: bold; color: var(--primary);" id="final-score">0 / 100</div>
+            <div class="rank-box" id="rank-display"></div>
+            <p id="rank-advice" style="line-height: 1.7; font-size: 16px; padding: 0 20px;"></p>
+            <button class="btn-action btn-primary-action" style="max-width: 300px; margin: 20px auto;" onclick="location.reload()">Thực hiện lại bài kiểm tra</button>
+        </div>
+    </div>
+
+    <div class="qr-widget">
+        <p style="font-weight: bold; font-size: 13px; color: #555;">QUÉT MÃ LÀM TRÊN ĐIỆN THOẠI</p>
+        <img id="qr-image" src="" alt="QR Code" style="border: 1px solid #ddd; padding: 5px; background: #fff; width: 160px; height: 160px;">
+        <div style="font-size: 12px; color: #666; margin-top: 10px; line-height: 1.4;">Anh em có thể dùng Zalo hoặc Camera điện thoại quét mã này để làm bài kiểm tra tiện lợi hơn trên di động.</div>
+    </div>
+</div>
+
+<div class="pause-overlay" id="pause-screen">
+    <div class="pause-modal">
+        <h3 style="color:var(--primary); margin-top:0;">HỆ THỐNG ĐANG TẠM DỪNG</h3>
+        <p style="color:#555; line-height:1.6;">Đồng hồ đếm ngược đã được khóa tạm thời. Anh em giải quyết xong công việc đột xuất có thể bấm nút dưới đây để tiếp tục.</p>
+        <button class="btn-action btn-primary-action" style="width:100%;" onclick="togglePause()">Tiếp tục làm bài</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        // ==========================================
+        // KHỐI 1: VĂN HÓA DOANH NGHIỆP BWACO (10 CÂU)
+        // ==========================================
+        {
+            cat: "Văn hóa doanh nghiệp BWACO",
+            q: "Giá trị cốt lõi hàng đầu của Sổ tay văn hóa doanh nghiệp BWACO là gì?",
+            opts: [
+                "A. Chuyên nghiệp, trách nhiệm và luôn đặt lợi ích cộng đồng làm trung tâm.",
+                "B. Tối đa hóa doanh thu bằng mọi giá từ việc bán nước sạch.",
+                "C. Thực hiện nhanh, đơn giản hóa tối đa quy trình chất lượng."
+            ],
+            correct: 0,
+            exp: "Văn hóa BWACO luôn đặt trách nhiệm vì cộng đồng và sự chuyên nghiệp lên hàng đầu."
+        },
+        {
+            cat: "Văn hóa doanh nghiệp BWACO",
+            q: "Môi trường làm việc tại BWACO được Ban Lãnh đạo cam kết xây dựng dựa trên nền tảng nào?",
+            opts: [
+                "A. Cạnh tranh khép kín giữa các tổ đội.",
+                "B. Chuyên nghiệp, năng động, thân thiện và bình đẳng trong chia sẻ lợi ích.",
+                "C. Hoạt động độc lập, hạn chế phối hợp liên phòng ban."
+            ],
+            correct: 1,
+            exp: "Thông điệp Chủ tịch HĐQT khẳng định BWACO cam kết chia sẻ lợi ích bình đẳng và tạo môi trường thân thiện."
+        },
+        {
+            cat: "Văn hóa doanh nghiệp BWACO",
+            q: "Khẩu hiệu hành động nào thể hiện tinh thần lao động sáng tạo của người lao động BWACO?",
+            opts: [
+                "A. Làm hết việc, không làm hết giờ - Đổi mới và cải tiến liên tục.",
+                "B. Thực hiện đúng khuôn mẫu cũ, hạn chế thay đổi kỹ thuật.",
+                "C. Chỉ thực hiện nhiệm vụ khi có văn bản chỉ đạo trực tiếp."
+            ],
+            correct: 0,
+            exp: "Làm hết việc chứ không làm hết giờ thể hiện tinh thần cống hiến và chủ động của người BWACO."
+        },
+        {
+            cat: "Văn hóa doanh nghiệp BWACO",
+            q: "Khi giao tiếp với khách hàng hoặc đối tác bên ngoài, nhân viên BWACO cần thể hiện thái độ ứng xử thế nào?",
+            opts: [
+                "A. Kiên quyết, cứng nhắc và yêu cầu khách hàng tuyệt đối tuân thủ.",
+                "B. Lắng nghe, cầu thị, nhã nhặn nhưng tuân thủ đúng quy định pháp luật và công ty.",
+                "C. Tránh trả lời trực tiếp, đùn đẩy trách nhiệm qua các bộ phận khác."
+            ],
+            correct: 1,
+            exp: "Thái độ nhã nhặn, lắng nghe giúp nâng cao hình ảnh uy tín và chất lượng phục vụ của công ty."
+        },
+        {
+            cat: "Văn hóa doanh nghiệp BWACO",
+            q: "Theo định hướng phát chỉnh con người, BWACO hỗ trợ người lao động tham gia chương trình gì?",
+            opts: [
+                "A. Các khóa học tự phát ngoài giờ không liên quan đến công việc chuyên môn.",
+                "B. Học tập, đào tạo phát triển nghề nghiệp, kỹ năng cuộc sống và bổ sung kiến thức toàn diện.",
+                "C. Chỉ tổ chức đào tạo ngắn hạn dành riêng cho đội ngũ quản lý cấp cao."
+            ],
+            correct: 1,
+            exp: "BWACO chú trọng phát triển con người toàn diện cả về nghề nghiệp chuyên môn lẫn kỹ năng sống."
+        },
+        {
+            cat: "Văn hóa doanh nghiệp BWACO",
+            q: "Trách nhiệm xã hội của một thành viên BWACO được thể hiện rõ nhất qua hành động nào dưới đây?",
+            opts: [
+                "A. Bảo vệ nghiêm ngặt nguồn tài nguyên nước và môi trường xung quanh lưu vực.",
+                "B. Tập trung hoàn thành chỉ tiêu doanh thu cá nhân, bỏ qua việc rò rỉ mạng lưới.",
+                "C. Sử dụng lãng phí nước sạch tại các khu vực nội bộ nhà máy."
+            ],
+            correct: 0,
+            exp: "Bảo vệ tài nguyên nước và môi trường xung quanh lưu vực là bảo vệ tương lai chung của cộng đồng."
+        },
+        {
+            cat: "Văn hóa doanh nghiệp BWACO",
+            q: "Mối quan hệ đồng nghiệp giữa các phòng, ban, xí nghiệp trong ngôi nhà chung BWACO dựa trên tiêu chí:",
+            opts: [
+                "A. Thân thiện, hỗ trợ, phối hợp nhịp nhàng vì mục tiêu chung của công ty.",
+                "B. Giữ khoảng cách, hạn chế trao đổi để bảo mật công việc nội bộ.",
+                "C. Thực hiện độc lập, không cần quan tâm đến khó khăn của đơn vị phối hợp."
+            ],
+            correct: 0,
+            exp: "Sự kết nối, sẻ chia và hỗ trợ lẫn nhau giữa các đồng nghiệp tạo nên sức mạnh tổng thể của đại gia đình BWACO."
+        },
+        {
+            cat: "Văn hóa doanh nghiệp BWACO",
+            q: "Mỗi CBCNV BWACO khi phát hiện hành vi gây lãng phí vật tư hoặc nguy cơ mất an toàn lao động tại công trường thì cần làm gì?",
+            opts: [
+                "A. Bỏ qua vì không thuộc phạm vi quản lý trực tiếp của tổ đội mình.",
+                "B. Chủ động báo cáo ngay cho cấp quản lý hoặc bộ phận chức năng để xử lý kịp thời.",
+                "C. Thảo luận với các công nhân khác nhưng không có biện pháp ngăn chặn."
+            ],
+            correct: 1,
+            exp: "Tinh thần làm chủ yêu cầu mỗi cá nhân có trách nhiệm bảo vệ tài sản công ty và an toàn cho đồng đội."
+        },
+        {
+            cat: "Văn hóa doanh nghiệp BWACO",
+            q: "Tác phong làm việc chuẩn mực của công nhân kỹ thuật BWACO khi ra công trường thực hiện nhiệm vụ là gì?",
+            opts: [
+                "A. Mặc trang phục tự do cho thoải mái trong thi công.",
+                "B. Sử dụng đầy đủ bảo hộ lao động, tác phong nghiêm túc, chuẩn bị sẵn sàng dụng cụ thiết bị.",
+                "C. Đến địa điểm thi công muộn giờ hẹn với khách hàng mà không thông báo."
+            ],
+            correct: 1,
+            exp: "Tác phong nghiêm túc, mặc đồ bảo hộ đầy đủ giúp bảo vệ bản thân và xây dựng hình ảnh chuyên nghiệp."
+        },
+        {
+            cat: "Văn hóa doanh nghiệp BWACO",
+            q: "Yếu tố nào được xem là tài sản quý giá nhất, nền tảng cho mọi thành công của BWACO?",
+            opts: [
+                "A. Hệ thống máy móc thiết bị nhập khẩu hiện đại.",
+                "B. Nguồn nhân lực chất lượng, giàu tâm huyết và thấm nhuần văn hóa công ty.",
+                "C. Khối lượng các tuyến ống phân phối lớn."
+            ],
+            correct: 1,
+            exp: "Con người BWACO luôn là trung tâm, nhân tố cốt lõi quyết định chất lượng và sự phát triển bền vững."
+        },
+
+        // ==========================================
+        // KHỐI 2: NƯỚC NGUỒN, NHÀ MÁY & SẢN XUẤT (30 CÂU)
+        // ==========================================
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Khi độ đục nước thô tại lưu vực hoặc hồ chứa tăng cao đột ngột vào mùa mưa, hành động xử lý kỹ thuật đầu tiên là gì?",
+            opts: [
+                "A. Giữ nguyên liều lượng phèn cũ để theo dõi thêm.",
+                "B. Tiến hành lấy mẫu làm thí nghiệm Jartest ngay lập tức để xác định liều lượng hóa chất châm tối ưu.",
+                "C. Ngắt hệ thống châm phèn/PAC để nước tự lắng."
+            ],
+            correct: 1,
+            exp: "Thí nghiệm Jartest là biện pháp bắt buộc để tìm ra định lượng hóa chất xử lý chính xác khi nước thô biến động."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Mục đích chính của việc duy trì hệ thống châm Clo hóa sơ bộ nước thô tại công trình thu là gì?",
+            opts: [
+                "A. Tiêu diệt hàu nước, tảo, ký sinh trùng bám vào thành ống dẫn và hỗ trợ oxy hóa chất hữu cơ.",
+                "B. Làm tăng độ kiềm và ổn định chỉ số pH của nguồn nước.",
+                "C. Thay thế hoàn toàn cho công đoạn châm Clo khử trùng sau lọc."
+            ],
+            correct: 0,
+            exp: "Clo sơ bộ giúp ngăn ngừa triệt để sự phát triển của hàu nước gây nghẹt ống dẫn và giảm tải vi sinh cho nhà máy."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Hàm lượng Clo dư tự do trong nước sạch phát ra mạng lưới từ Trạm bơm cấp 2 lý tưởng nhất theo kế hoạch CNAT là bao nhiêu?",
+            opts: [
+                "A. Duy trì trong khoảng ổn định từ 0.3 đến 0.5 mg/l.",
+                "B. Càng cao càng tốt, trên 2.0 mg/l.",
+                "C. Phải triệt tiêu bằng 0 mg/l trước khi ra mạng."
+            ],
+            correct: 0,
+            exp: "Khoảng 0.3 - 0.5 mg/l bảo đảm nước sạch được tiệt trùng liên tục trên đường ống dài mà không gây mùi nồng."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Hiện tượng nào ở bể lắng chứng tỏ quá trình phản ứng tạo bông cặn châm PAC đang đạt hiệu quả tốt?",
+            opts: [
+                "A. Các bông cặn to, chắc, lắng nhanh xuống đáy, nước trên bề mặt máng thu trong suốt.",
+                "B. Bông cặn lơ lửng, mịn nhỏ không lắng và trôi qua máng răng cưa.",
+                "C. Bề mặt bể lắng nổi nhiều váng bọt màu trắng xóa."
+            ],
+            correct: 0,
+            exp: "Bông cặn to, lắng nhanh và nước bề mặt trong chứng tỏ liều lượng hóa chất keo tụ đã châm rất chuẩn xác."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Khi máy đo Clo online tại nhà máy phát tín hiệu cảnh báo Clo dư nước sạch vượt ngưỡng (> 1.0 mg/l), ca trực cần xử lý thế nào?",
+            opts: [
+                "A. Đóng van phát mạng và dừng nhà máy lập tức.",
+                "B. Kiểm tra, báo cáo ca trưởng và điều chỉnh giảm công suất máy châm Clo về mức phù hợp.",
+                "C. Tăng công suất bơm nước thô lên để trung hòa."
+            ],
+            correct: 1,
+            exp: "Phải chủ động giảm lượng châm của máy Clorator và đo kiểm tra thủ công lại tại vòi để giám sát chỉ số."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Để đảm bảo công suất sản xuất cấp nước liên tục 24/24 khi lưới điện quốc gia bị mất đột ngột, nhà máy sử dụng phương án nào?",
+            opts: [
+                "A. Chờ đợi cơ quan điện lực sửa chữa lưới điện.",
+                "B. Kích hoạt và chuyển đổi sang nguồn điện từ hệ thống Máy phát điện dự phòng tại nhà máy.",
+                "C. Giảm áp lực cấp nước xuống tối thiểu để tiết kiệm điện tích lũy."
+            ],
+            correct: 1,
+            exp: "Hệ thống máy phát điện dự phòng giúp duy trì sản xuất liên tục, bảo đảm an ninh cấp nước an toàn."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Công đoạn nào là bước rào cản vật lý cuối cùng để giữ lại các hạt cặn lơ lửng kích thước nhỏ không thể lắng bằng trọng lực?",
+            opts: [
+                "A. Bể trộn nhanh hóa chất.",
+                "B. Quá trình lọc qua các bể lọc cát/vật liệu lọc.",
+                "C. Bể phản ứng tạo bông cặn."
+            ],
+            correct: 1,
+            exp: "Hệ thống lớp vật liệu lọc (cát thạch anh, sỏi đỡ) có vai trò giữ lại cặn nhỏ sót lại sau lắng, làm nước đạt độ trong chuẩn."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Tần suất súc rửa bể lọc cát định kỳ thông thường được căn cứ dựa trên yếu tố kỹ thuật nào?",
+            opts: [
+                "A. Theo cảm tính của công nhân vận hành ca trực.",
+                "B. Căn cứ vào tổn thất áp lực (độ chênh mực nước), thời gian chạy lọc hoặc độ đục nước sau lọc.",
+                "C. Chỉ rửa bể lọc khi có lệnh tổng kiểm tra từ phòng kỹ thuật."
+            ],
+            correct: 1,
+            exp: "Chu kỳ rửa lọc được xác định bằng thời gian chạy hoặc khi tổn thất áp lực tăng cao, bảo đảm hạt cặn không bị xuyên lòng lọc."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Mối nguy rủi ro sinh học lớn nhất đối với các hồ chứa nước nguồn (Đá Đen, Bình Châu...) cần kiểm soát nghiêm ngặt là gì?",
+            opts: [
+                "A. Hoạt động xả thải chăn nuôi, rác thải sinh hoạt và nước thải nông nghiệp chưa xử lý từ lưu vực.",
+                "B. Sự xuất hiện của các loài cá ăn cỏ trong hồ.",
+                "C. Hiện tượng bốc hơi nước tự nhiên vào mùa khô."
+            ],
+            correct: 0,
+            exp: "Nguồn xả thải từ chăn nuôi, sinh hoạt mang theo vi khuẩn, hữu cơ làm ô nhiễm nguồn nước thô nghiêm trọng."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Khi tiến hành vệ sinh và súc rửa định kỳ xả cặn đáy bể lắng, công nhân cần tuân thủ nghiêm ngặt quy định an toàn nào?",
+            opts: [
+                "A. Mang đầy đủ bảo hộ lao động, dây đai an toàn nếu làm việc trên cao và bảo đảm thông gió chống ngạt.",
+                "B. Có thể làm việc độc lập một mình dưới lòng bể mà không cần người giám sát phía trên.",
+                "C. Không cần ngắt nguồn điện của máy gạt bùn xung quanh."
+            ],
+            correct: 0,
+            exp: "Làm việc trong không gian hạn chế hoặc bể sâu đòi hỏi phải có bảo hộ, thông gió và người giám sát hỗ trợ."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Hóa chất PAC được sử dụng trong công nghệ xử lý nước sạch tại nhà máy đóng vai trò gì?",
+            opts: [
+                "A. Chất khử trùng tiêu diệt vi khuẩn.",
+                "B. Chất keo tụ tạo bông cặn gắn kết các hạt keo lơ lửng trong nước.",
+                "C. Chất điều chỉnh nâng độ pH của nước."
+            ],
+            correct: 1,
+            exp: "PAC (Poly Aluminium Chloride) là chất keo tụ thế hệ mới, giúp gom các hạt cặn nhỏ lơ lửng thành bông cặn lớn để dễ lắng."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Trong trường hợp xảy ra sự cố rò rỉ khí Clo tại phòng châm Clo, thiết bị bảo hộ bắt buộc công nhân phải sử dụng là gì?",
+            opts: [
+                "A. Khẩu trang y tế thông thường.",
+                "B. Mặt nạ phòng độc có hộp lọc độc chuyên dụng hoặc bình khí thở độc lập SCBA.",
+                "C. Kính bảo hộ và găng tay cao su thông thường."
+            ],
+            correct: 1,
+            exp: "Khí Clo rất độc đối với hệ hô hấp, bắt buộc phải dùng mặt nạ phòng độc chuyên dụng hoặc bình khí thở khi xử lý sự cố."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Tại nhà máy nước Ngãi Giao, thiết bị đo độ đục online dùng để giám sát chất lượng nước ở những vị trí cốt lõi nào?",
+            opts: [
+                "A. Nước thô đầu vào, nước sau lắng và nước sạch sau lọc phát mạng.",
+                "B. Chỉ đo duy nhất tại bể chứa nước sạch công ty.",
+                "C. Chỉ đo tại máng xả cặn của các bể lắng."
+            ],
+            correct: 0,
+            exp: "Giám sát độ đục ở cả 3 công đoạn giúp kiểm soát chặt chẽ hiệu quả của từng khối công nghệ xử lý."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Hiện tượng 'xuyên lọc' (cặn bẩn trôi qua lớp cát lọc vào nước sạch) thường xảy ra do nguyên nhân kỹ thuật nào?",
+            opts: [
+                "A. Áp lực lọc quá nhỏ.",
+                "B. Chu kỳ lọc quá dài, không súc rửa lọc kịp thời khiến lớp cát bị bão hòa cặn.",
+                "C. Tốc độ châm Clo sơ bộ tại hố thu quá cao."
+            ],
+            correct: 1,
+            exp: "Không rửa lọc đúng hạn làm cặn bẩn tích tụ đầy lòng cát và bị áp lực dòng chảy đẩy xuyên qua lớp vật liệu lọc."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Mục đích của việc kiểm tra và ghi chép nhật ký vận hành các thông số dòng điện, điện áp của động cơ máy bơm cấp 2 mỗi ca trực là gì?",
+            opts: [
+                "A. Để đối chiếu lượng điện tiêu thụ cuối tháng.",
+                "B. Phát hiện sớm các bất thường như quá tải, mất pha, kẹt cánh bơm để bảo vệ thiết bị.",
+                "C. Phục vụ cho việc báo cáo hành chính thông thường."
+            ],
+            correct: 1,
+            exp: "Theo dõi chỉ số dòng điện (Ampe) giúp phát hiện sớm nguy cơ hỏng hóc, cháy động cơ bơm."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Theo kế hoạch CNAT hệ thống cấp nước Phước Bửu, hành vi nào dưới đây bị nghiêm cấm tuyệt đối tại khu vực lòng hồ nguồn nước?",
+            opts: [
+                "A. Đánh bắt cá bằng xung điện, chất độc, xả rác và chăn thả gia súc sát mép nước chứa.",
+                "B. Tổ chức quan trắc lấy mẫu kiểm tra định kỳ.",
+                "C. Thả phao tiêu cảnh báo khu vực công trình thu."
+            ],
+            correct: 0,
+            exp: "Xung điện, chất độc và chất thải chăn nuôi phá hủy hệ sinh thái hồ và trực tiếp đe dọa an toàn nguồn nước thô."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Yếu tố pH của nước sạch phát mạng cần được khống chế trong khoảng nào theo quy chuẩn QCVN của Bộ Y tế?",
+            opts: [
+                "A. Từ 4.0 đến 6.0.",
+                "B. Từ 6.5 đến 8.5.",
+                "C. Từ 9.0 đến 11.0."
+            ],
+            correct: 1,
+            exp: "Độ pH chuẩn từ 6.5 - 8.5 bảo đảm nước không gây ăn mòn đường ống và an toàn cho sức khỏe người tiêu dùng."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Biện pháp an toàn quan trọng nhất khi vận hành hệ thống nâng hạ bồn chứa Clo hóa lỏng nặng 1 tấn là gì?",
+            opts: [
+                "A. Kiểm tra kỹ tải trọng cáp, khóa an toàn của palang và không đứng dưới tầm treo bồn khí.",
+                "B. Di chuyển bồn Clo càng nhanh càng tốt để tiết kiệm thời gian.",
+                "C. Chỉ cần một người thực hiện không cần người giám sát."
+            ],
+            correct: 0,
+            exp: "Khối lượng bồn Clo rất lớn, việc kiểm tra thiết bị nâng hạ giúp ngăn ngừa tai nạn đứt cáp rơi bồn cực kỳ nguy hiểm."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Khi phát hiện hàm lượng sắt hoặc mangan trong nước thô tăng cao, công nghệ xử lý tại nhà máy cần tăng cường công đoạn nào?",
+            opts: [
+                "A. Giảm thời gian lắng của bể lắng.",
+                "B. Tăng cường quá trình oxy hóa (bằng Clo hoặc giàn mưa làm thoáng) kết hợp điều chỉnh pH để kết tủa kim loại.",
+                "C. Tắt hoàn toàn hệ thống bể lọc cát."
+            ],
+            correct: 1,
+            exp: "Oxy hóa giúp chuyển sắt, mangan hòa tan thành dạng kết tủa oxit, sau đó sẽ bị giữ lại tại bể lắng và bể lọc."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Hệ thống giàn thu nước răng cưa tại bể lắng cần được vệ sinh, cọ rửa rong rêu định kỳ nhằm mục đích gì?",
+            opts: [
+                "A. Đảm bảo thu nước đều khắp bề mặt bể, ngăn rong rêu bong tróc trôi sang làm tắc bể lọc.",
+                "B. Làm tăng hàm lượng oxy hòa tan trong nước sạch.",
+                "C. Giảm lượng hóa chất keo tụ PAC châm vào đầu nguồn."
+            ],
+            correct: 0,
+            exp: "Rong rêu bám ở máng răng cưa gây phân phối dòng chảy không đều và làm bẩn, nhanh nghẹt lớp cát lọc phía sau."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Chỉ số độ đục của nước sạch sau lọc phát mạng yêu cầu tối ưu theo tiêu chuẩn nội bộ BWACO hướng tới là bao nhiêu?",
+            opts: [
+                "A. Nhỏ hơn 2.0 NTU.",
+                "B. Càng nhỏ càng tốt, lý tưởng là nhỏ hơn 0.5 NTU.",
+                "C. Nằm trong khoảng từ 5.0 đến 10.0 NTU."
+            ],
+            correct: 1,
+            exp: "Độ đục dưới 0.5 NTU bảo đảm nước có độ trong suốt tuyệt hảo, không chứa cặn lơ lửng và đạt chuẩn chất lượng cao."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Trong quy trình vận hành trạm bơm cấp 1, khi phát hiện giếng thu nước thô có nhiều rác, lá cây bám kín lưới chắn rác, công nhân cần làm gì?",
+            opts: [
+                "A. Chờ đến hết ca trực mới xử lý.",
+                "B. Chủ động vệ sinh, vớt rác ngay để tránh làm tắc nghẽn dòng chảy và hỏng cánh bơm thô.",
+                "C. Tăng công suất bơm lên để hút rác qua van."
+            ],
+            correct: 1,
+            exp: "Rác bám kín lưới chắn làm giảm lượng nước vào giếng thu gây hiện tượng xâm thực, nguy cơ hỏng buồng bơm."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Tại nhà máy nước Bình Châu, việc rà soát quy trình vận hành chuẩn (SOP) của khối sản xuất xử lý nước được thực hiện với tần suất nào?",
+            opts: [
+                "A. Định kỳ ít nhất 1 năm/lần hoặc đột xuất khi có sự cố, thay đổi công nghệ.",
+                "B. 5 năm mới cần rà soát lại một lần.",
+                "C. Chỉ rà soát khi có đoàn kiểm tra liên ngành của tỉnh."
+            ],
+            correct: 0,
+            exp: "Tần suất định kỳ 1 năm/lần giúp cập nhật các điều chỉnh kỹ thuật phù hợp với thực tế chất lượng nguồn nước biến đổi."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Khi bể chứa nước sạch đầy tràn nhưng hệ thống phao ngắt hoặc cảm biến online bị lỗi không hoạt động, người vận hành ca trực phải làm gì?",
+            opts: [
+                "A. Đợi thiết bị tự phục hồi.",
+                "B. Chuyển sang chế độ vận hành thủ công (Manual), chủ động điều tiết giảm bơm hoặc đóng van và báo bộ phận sửa chữa.",
+                "C. Kệ cho nước tràn qua máng xả tràn nhà máy."
+            ],
+            correct: 1,
+            exp: "Vận hành thủ công kịp thời giúp ngăn ngừa thất thoát nước sạch thành phẩm và bảo vệ an toàn khuôn viên nhà máy."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Vì sao không được châm trực tiếp hóa chất PAC và Clo nguyên chất tại cùng một vị trí sát nhau trên đường ống trộn nước thô?",
+            opts: [
+                "A. Vì chúng phản ứng trung hòa làm giảm tác dụng keo tụ của PAC và giảm khả năng oxy hóa của Clo.",
+                "B. Vì sẽ làm tăng chi phí mua hóa chất châm.",
+                "C. Vì gây hiện tượng đóng cặn vôi cứng trong ống châm."
+            ],
+            correct: 0,
+            exp: "Các vị trí châm hóa chất phải được tính toán khoảng cách thích hợp để mỗi loại phát huy tối đa phản ứng công nghệ."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Để kiểm tra độ an toàn và độ kín của các mối nối đường ống dẫn khí Clo, người ta sử dụng giải pháp nào?",
+            opts: [
+                "A. Dùng ngọn lửa bật lửa hơ xung quanh mối nối.",
+                "B. Dùng dung dịch amoniac đậm đặc (NH4OH) quét xung quanh mối nối, nếu có khói trắng xuất hiện là bị rò rỉ Clo.",
+                "C. Nhúng tay trực tiếp vào để sờ kiểm tra luồng khí."
+            ],
+            correct: 1,
+            exp: "Amoniac gặp khí Clo rò rỉ sẽ phản ứng tạo thành khói trắng amoni clorua rất đặc trưng, giúp phát hiện vị trí hở cực nhỏ."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Nhiệm vụ trọng tâm của Nhóm/Ban Cấp nước an toàn (CNAT) tại BWACO là gì?",
+            opts: [
+                "A. Đánh giá mối nguy, quản lý rủi ro từ lưu vực đến vòi nước khách hàng nhằm bảo đảm cấp nước liên tục, chất lượng.",
+                "B. Tập trung tìm kiếm các nguồn doanh thu tài chính mới cho công ty.",
+                "C. Chỉ đi kiểm tra chấm điểm thi đua của các xí nghiệp vào cuối năm."
+            ],
+            correct: 0,
+            exp: "Ban CNAT kiểm soát toàn diện chuỗi cung ứng nước để phòng ngừa rủi ro nhiễm bẩn hoặc gián đoạn cấp nước."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Khi vận hành hệ thống châm vôi điều chỉnh pH, cặn vôi thường xuyên gây tắc nghẽn đường ống châm. Biện pháp bảo dưỡng định kỳ là gì?",
+            opts: [
+                "A. Tăng nồng độ pha sữa vôi đặc hơn.",
+                "B. Súc xả định kỳ đường ống châm bằng nước áp lực cao hoặc dung dịch axit loãng để hòa tan cặn vôi bám thành ống.",
+                "C. Tắt hoàn toàn không châm vôi nữa."
+            ],
+            correct: 1,
+            exp: "Súc xả bằng áp lực hoặc axit loãng giúp làm sạch cặn canxi cacbonat bám dính, giữ ống châm luôn thông suốt."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Biện pháp kiểm chứng (Verification) chất lượng nước sạch trong kế hoạch CNAT bao gồm hoạt động nào?",
+            opts: [
+                "A. Lấy mẫu thử nghiệm nội bộ tại nhà máy và gửi mẫu kiểm nghiệm độc lập tại các trung tâm đạt chuẩn định kỳ.",
+                "B. Chỉ căn cứ vào chỉ số hiển thị trên các máy đo online tại nhà máy.",
+                "C. Do khách hàng tự đo và gửi kết quả về cho công ty."
+            ],
+            correct: 0,
+            exp: "Kiểm chứng độc lập bằng phòng thí nghiệm chuẩn hóa giúp xác nhận tính khách quan, tin cậy của chất lượng nước sạch."
+        },
+        {
+            cat: "Nước nguồn, Nhà máy & Sản xuất",
+            q: "Khi nồng độ chất hữu cơ trong nước nguồn tăng cao (chỉ số KMnO4 tăng), lượng châm Clo khử trùng thường thay đổi như thế nào?",
+            opts: [
+                "A. Giảm lượng châm Clo đi.",
+                "B. Phải tăng lượng châm Clo vì chất hữu cơ tiêu tốn Clo thông qua các phản ứng oxy hóa phụ.",
+                "C. Giữ nguyên tuyệt đối không được thay đổi."
+            ],
+            correct: 1,
+            exp: "Hữu cơ cao tạo ra nhu cầu Clo lớn, bắt buộc phải tăng lượng châm để bảo đảm lượng Clo dư hữu hiệu diệt khuẩn."
+        },
+
+        // ==========================================
+        // KHỐI 3: CÔNG TÁC MẠNG LƯỚI ĐƯỜNG ỐNG (30 CÂU)
+        // ==========================================
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Theo Sổ tay kỹ thuật thi công lắp đặt và sửa chữa đường ống BWACO, khi chôn lấp tuyến ống nhựa HDPE ngầm dưới vỉa hè, tấm băng nhựa cảnh báo tuyến ống phải đặt cách lưng ống khoảng bao nhiêu?",
+            opts: [
+                "A. Đặt sát trực tiếp vào lưng ống.",
+                "B. Cách mặt lưng ống từ 20cm đến 30cm sau khi đã lấp lớp cát đệm mịn đầm chặt.",
+                "C. Đặt trên mặt lớp đất hoàn trả sát bề mặt vỉa hè."
+            ],
+            correct: 1,
+            exp: "Khoảng cách chôn băng cảnh báo từ 20-30cm nhằm bảo vệ ống tránh bị tác động cơ giới đào bới sau này chạm trực tiếp vào thân ống."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Khi tiến hành cắt ống HDPE đường kính lớn phục vụ công tác đấu nối hoặc sửa chữa bể ống, thiết bị chuyên dụng nào mang lại hiệu quả cắt phẳng và nhanh nhất?",
+            opts: [
+                "A. Dùng cưa tay thông thường.",
+                "B. Dùng máy cưa xích chạy xăng chuyên dụng cắt ống HDPE.",
+                "C. Dùng dây thép để cắt ma sát."
+            ],
+            correct: 1,
+            exp: "Máy cưa xích chạy xăng chuyên dụng giúp cắt ống đường kính lớn thẳng góc, nhanh, không làm xơ tước đầu ống."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Yêu cầu kỹ thuật quan trọng nhất đối với lớp cát đệm lót đáy hào trước khi hạ ống xuống lòng rãnh đào là gì?",
+            opts: [
+                "A. Dùng cát lẫn nhiều sỏi đá lớn.",
+                "B. Lớp cát sạch mịn, dày tối thiểu 10cm, được san phẳng và không chứa đá dăm đá hộc sắc nhọn.",
+                "C. Chỉ cần đất đào lên gạt phẳng là được, không cần cát đệm."
+            ],
+            correct: 1,
+            exp: "Cát đệm mịn dày 10cm giúp bảo vệ thân ống không bị cấn, trầy xước hoặc bục vỡ khi chịu tải trọng đất đá đè lên."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Khi sửa chữa sự cố vỡ đường ống nước sạch đường kính lớn, thiết bị bơm nào thường được chuẩn bị để hút nước trong hố móng đào?",
+            opts: [
+                "A. Bơm điện chìm công suất nhỏ 400W.",
+                "B. Bơm điện chìm chuyên dụng hoặc bơm xăng tự mồi lưu lượng lớn để hút cạn nước bùn hào đào liên tục.",
+                "C. Dùng xô múc nước thủ công."
+            ],
+            correct: 1,
+            exp: "Bơm bùn lưu lượng lớn giúp hút cạn hố móng nhanh chóng, tạo không gian khô ráo cho thợ thao tác hàn ráp nối ống."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Khoảng cách an toàn tối thiểu theo quy chuẩn khi đặt đường ống cấp nước sạch song song với đường ống thoát nước thải ngầm là bao nhiêu?",
+            opts: [
+                "A. Đặt sát cạnh nhau để tiết kiệm không gian đào hào.",
+                "B. Khoảng cách tim hai ống tối thiểu từ 1.0m đến 1.5m và ống cấp nước phải nằm cao hơn ống thoát nước thải.",
+                "C. Chỉ cần cách nhau 10cm."
+            ],
+            correct: 1,
+            exp: "Đặt cách xa 1.0m-1.5m và cao hơn giúp ngăn ngừa nguy cơ nước thải rò rỉ nhiễm bẩn ngược vào ống nước sạch khi sụt áp."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Trước khi tiến hành gia nhiệt mối hàn đối đầu (hàn mặt đầu) ống nhựa HDPE, công nhân bắt buộc phải thực hiện bước nào?",
+            opts: [
+                "A. Giữ nguyên đầu ống bẩn để hàn cho bám dính.",
+                "B. Vát phẳng đầu ống bằng dao gọt chuyên dụng và lau sạch hoàn toàn bụi bẩn, nước bám bằng khăn sạch, cồn.",
+                "C. Bôi một lớp mỡ bò lên bề mặt cắt ống."
+            ],
+            correct: 1,
+            exp: "Đầu ống phải phẳng tuyệt đối và sạch bụi, nước để mối hàn nhiệt liên kết phân tử đồng đều, không bị rỗ hay bong tróc."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Sau khi hoàn thành thi công lắp đặt một tuyến ống phân phối mới, công tác kiểm tra kỹ thuật bắt buộc phải triển khai trước khi đấu nối cấp nước là gì?",
+            opts: [
+                "A. Thử áp lực đường ống theo quy trình chuẩn và tiến hành súc xả, khử trùng tuyến ống đạt tiêu chuẩn vi sinh.",
+                "B. Lấp đất hoàn trả mặt bằng ngay rồi mở nước sử dụng.",
+                "C. Chỉ cần kiểm tra bằng mắt các mối nối bên ngoài vỉa hè."
+            ],
+            correct: 0,
+            exp: "Thử áp giúp phát hiện rò rỉ mối nối; súc xả khử trùng bảo đảm nước cấp đến dân sạch sẽ, không nhiễm khuẩn thi công."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Áp lực thử nghiệm đường ống phân phối (HDPE/uPVC) thông thường yêu cầu bằng bao nhiêu so với áp lực vận hành thiết kế?",
+            opts: [
+                "A. Bằng đúng áp lực vận hành thực tế.",
+                "B. Gấp 1.5 lần áp lực thiết kế của tuyến ống và duy trì trong thời gian quy định.",
+                "C. Gấp 5 lần áp lực thiết kế để thử độ bền tối đa."
+            ],
+            correct: 1,
+            exp: "Thử áp gấp 1.5 lần giúp kiểm chứng khả năng chịu tải đỉnh và độ bền cơ học của toàn bộ mối nối, phụ kiện lắp đặt."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Khi vận hành đóng/mở các van chặn (van cổng, van bướm) đường kính lớn trên mạng lưới phân phối, thao tác đúng kỹ thuật là:",
+            opts: [
+                "A. Dùng xà beng bẩy quay thật nhanh và đột ngột.",
+                "B. Quay tay van từ từ, đều đặn để tránh hiện tượng 'va đập thủy lực' (búa nước) gây vỡ gãy ống.",
+                "C. Đóng mạnh van hết cỡ bằng búa tạ."
+            ],
+            correct: 1,
+            exp: "Đóng mở đột ngột làm thay đổi vận tốc dòng chảy quá nhanh, tạo sóng áp lực búa nước cực lớn gây nổ vỡ đường ống."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Thiết bị van xả khí (Air Release Valve) được lắp đặt tại các vị trí nào trên tuyến ống truyền tải và phân phối nước sạch?",
+            opts: [
+                "A. Tại các điểm thấp nhất của tuyến ống gần hố van xả cặn.",
+                "B. Tại các điểm cao nhất trên trắc dọc tuyến ống để xả lượng khí tích tụ trong lòng ống.",
+                "C. Lắp ngẫu nhiên ở bất kỳ vị trí nào trên mạng lưới."
+            ],
+            correct: 1,
+            exp: "Khí luôn tích tụ ở điểm cao, gây túi khí cản trở dòng chảy và tăng áp lực cục bộ, van xả khí tự động giải phóng lượng khí này."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Để bảo vệ các tuyến ống phân phối đi qua các khu vực nền đất yếu, dễ sụt lún hoặc dưới lòng đường có xe tải trọng lớn chạy qua, giải pháp kỹ thuật là gì?",
+            opts: [
+                "A. Đặt ống sâu hơn mà không cần gia cố đáy hào.",
+                "B. Gia cố móng hào bằng cọc tre/bê tông đệm cát, sử dụng ống có cấp áp lực cao hơn hoặc lồng trong ống lồng bảo vệ.",
+                "C. Giữ nguyên biện pháp thi công thông thường."
+            ],
+            correct: 1,
+            exp: "Gia cố nền và dùng ống lồng giúp triệt tiêu tải trọng động lực từ xe cộ truyền xuống, bảo vệ thân ống bền bỉ."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Khi phát hiện sự cố sụt áp lực mạng lưới cục bộ nhưng không thấy nước phun lên mặt đất, đội dò tìm rò rỉ (DMA) sử dụng thiết bị gì?",
+            opts: [
+                "A. Máy dò âm dòng chảy (thiết bị nghe khuếch đại âm thanh rò rỉ ngầm) hoặc máy tương quan dòng.",
+                "B. Dùng cuốc xẻng đào dọc tuyến ống để tìm.",
+                "C. Chờ đến khi nước tự thấm lên bề mặt."
+            ],
+            correct: 0,
+            exp: "Thiết bị khuếch đại âm thanh giúp thợ định vị chính xác vị trí ống bể ngầm dưới lòng đất thông qua tiếng rò rỉ nước."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Quy trình lắp đặt cụm đồng hồ đo nước cho khách hàng yêu cầu khoảng cách đặt van chặn trước đồng hồ như thế nào?",
+            opts: [
+                "A. Không cần lắp van chặn trước đồng hồ.",
+                "B. Van chặn phải được lắp ngay phía trước, sát đầu vào của đồng hồ nước để phục vụ bảo trì, cô lập thay thế.",
+                "C. Van chặn lắp phía sau đồng hồ nước."
+            ],
+            correct: 1,
+            exp: "Van khóa đặt trước đồng hồ giúp ngắt nước dễ dàng khi cần tháo định kỳ kiểm định hoặc sửa chữa thay thế cụm đồng hồ."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Dụng cụ 'Lược chắn rác' được tích hợp lắp đặt trong cụm đồng hồ nước nhằm mục đích cốt lõi nào?",
+            opts: [
+                "A. Để lọc sạch nước tuyệt đối cho khách hàng ăn uống.",
+                "B. Ngăn cặn sỏi, rác thi công lọt vào làm kẹt cánh quạt và hỏng cơ cấu đếm số của đồng hồ.",
+                "C. Làm giảm áp lực nước vào nhà dân."
+            ],
+            correct: 1,
+            exp: "Lược rác giữ lại cặn thô trên mạng lưới, bảo vệ bánh răng đồng hồ vận hành chính xác và kéo dài tuổi thọ thiết bị."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Khi tiến hành đào hào bằng máy đào cơ giới trên vỉa hè có nhiều công trình ngầm (cáp điện, cáp viễn thông), người giám sát cần lưu ý gì?",
+            opts: [
+                "A. Cho máy đào chạy tốc độ tối đa để kịp tiến độ bàn giao.",
+                "B. Phải dò tìm vị trí, đào thăm dò thủ công bằng xẻng và có người xi nhan hướng dẫn cho tài xế máy đào.",
+                "C. Không cần quan tâm vì công trình ngầm khác không thuộc quản lý BWACO."
+            ],
+            correct: 1,
+            exp: "Đào thăm dò thủ công giúp tránh cuốc đứt cáp điện lực, viễn thông ngầm gây tai nạn nguy hiểm và đền bù thiệt hại."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Yêu cầu kỹ thuật về độ sâu chôn ống (tính từ mặt đất đến lưng ống) tối thiểu đối với đường ống phân phối nằm dưới lòng đường cơ giới là bao nhiêu?",
+            opts: [
+                "A. Tối thiểu 0.3m.",
+                "B. Tối thiểu từ 0.7m đến 1.0m tùy theo tải trọng và quy hoạch giao thông vỉa hè, lòng đường.",
+                "C. Phải chôn sâu trên 3.0m trong mọi trường hợp."
+            ],
+            correct: 1,
+            exp: "Độ sâu chôn ống ≥ 0.7m - 1.0m bảo đảm khoảng cách an toàn chịu lực nén trực tiếp từ bánh xe các phương tiện vận tải."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Vật liệu làm kín mối ren khi đấu nối phụ kiện ren đồng/nhựa trong cụm đồng hồ nước phổ biến và an toàn nhất là gì?",
+            opts: [
+                "A. Băng keo tan cao su non (băng keo lụa Teflon) chuyên dụng.",
+                "B. Sợi đay kết hợp với sơn chống rỉ.",
+                "C. Keo dán ống uPVC 502."
+            ],
+            correct: 0,
+            exp: "Cao su non (Teflon) giúp làm kín khít khay ren tuyệt đối, dễ vặn tháo dỡ và không gây ô nhiễm nguồn nước sạch."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Trong công tác quản lý mạng lưới, mục đích chính của việc 'Xả cặn mạng lưới' (Flushing) định kỳ tại các điểm cuối tuyến ống là gì?",
+            opts: [
+                "A. Để xả bỏ bớt lượng nước thừa của nhà máy.",
+                "B. Loại bỏ cặn lắng mịn tích tụ lâu ngày ở cuối tuyến ống, bảo đảm độ trong của nước sạch đến nhà dân.",
+                "C. Kiểm tra xem áp lực ống có bị vỡ hay không."
+            ],
+            correct: 1,
+            exp: "Nước ở cuối tuyến di chuyển chậm dễ lắng cặn mịn, việc xả cặn định kỳ giúp làm sạch lòng ống, tránh nước đục cục bộ."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Khi lắp đặt mối nối mặt bích (Flange connection) giữa ống thép và van chặn, quy tắc siết bu lông chuẩn kỹ thuật là gì?",
+            opts: [
+                "A. Siết chặt hoàn toàn từng con một theo vòng tròn.",
+                "B. Siết từ từ theo hình chữ X (đối xứng chéo nhau) để mặt bích ép đều vào gioăng cao su làm kín.",
+                "C. Dùng máy siết hết công suất ngay từ con đầu tiên."
+            ],
+            correct: 1,
+            exp: "Siết đối xứng chữ X bảo đảm lực ép lên vòng đệm gioăng cao su đều khắp bề mặt, không bị vênh lệch gây rò rỉ nước."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Để liên kết hai đoạn ống nhựa uPVC với nhau bằng phương pháp dán keo, hành động nào sau đây là SAI kỹ thuật?",
+            opts: [
+                "A. Lau sạch và làm nhám bề mặt đầu ống và lòng giắc co nối.",
+                "B. Thoa keo dán đồng đều và cắm chặt hai đầu ống, giữ nguyên cố định khoảng 10-15 giây.",
+                "C. Xoay vặn đầu ống liên tục nhiều vòng sau khi đã cắm sâu ống vào khay dán keo."
+            ],
+            correct: 2,
+            exp: "Xoay vặn liên tục khi keo đang bắt đầu đông kết sẽ phá vỡ liên kết hóa học của keo, gây rò rỉ mối nối khi chịu áp lực."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Khi sửa chữa một mối bể lớn trên ống Gang dẻo (DI) hoặc ống HDPE mà không muốn cắt bỏ đoạn ống, thợ mạng lưới dùng phụ kiện gì?",
+            opts: [
+                "A. Đai khởi thủy châm ren.",
+                "B. Măng xông sửa chữa nhanh (khớp nối vạn năng hai mảnh - đai ôm sửa chữa bằng inox/gang).",
+                "C. Nút bít đầu ống."
+            ],
+            correct: 1,
+            exp: "Đai ôm sửa chữa inox (măng xông bản lớn) giúp ôm chặt và bọc kín lỗ thủng thân ống nhanh chóng dưới áp lực lớn."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Hành động nào bắt buộc phải thực hiện đối với hố đào thi công trên đường giao thông vào cuối ngày làm việc để bảo đảm an toàn xã hội?",
+            opts: [
+                "A. Rào chắn đầy đủ, lắp biển báo công trường và bố trí đèn cảnh báo chớp nháy vào ban đêm.",
+                "B. Chỉ cần thu dọn đồ nghề cất đi là đủ.",
+                "C. Giữ nguyên hố đào không cần rào để hôm sau làm tiếp cho tiện."
+            ],
+            correct: 0,
+            exp: "Rào chắn và đèn chớp đêm giúp ngăn ngừa người tham gia giao thông sụt hố, bảo đảm an toàn tuyệt đối."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Khi hàn nhiệt ống HDPE bằng máy hàn điện trở (Socket fusion), việc đánh dấu độ sâu cắm ống có tác dụng gì?",
+            opts: [
+                "A. Để tính khối lượng vật tư thanh quyết toán.",
+                "B. Bảo đảm đầu ống được đẩy vào đúng vị trí gia nhiệt, tránh đẩy quá sâu gây hẹp tiết diện lòng ống hoặc đẩy nông gây thiếu liên kết.",
+                "C. Giúp thợ dễ tháo ống ra sau khi hàn xong."
+            ],
+            correct: 1,
+            exp: "Đẩy quá sâu tạo ra gờ nhựa tràn vào lòng ống gây cản trở dòng chảy; đẩy nông làm mối hàn yếu, dễ tuột bục vỡ."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Hiện tượng rò rỉ ngầm trên mạng lưới phân phối không được phát hiện kịp thời sẽ gây ra hậu quả kinh tế lớn nhất nào?",
+            opts: [
+                "A. Làm tăng tỷ lệ thất thoát nước (NRW) và lãng phí chi phí sản xuất hóa chất, điện năng của công ty.",
+                "B. Làm cho đường ống nhanh bị rỉ sét hơn.",
+                "C. Làm tăng áp lực nước tại nhà máy bơm."
+            ],
+            correct: 0,
+            exp: "Rò rỉ ngầm tiêu tốn lượng nước sạch thành phẩm vô ích, trực tiếp đẩy chỉ số thất thoát nước của doanh nghiệp tăng cao."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Khi lắp đặt van chặn ngầm dưới lòng đường, bộ phận 'Hố van và nắp hộp van' (Valve box) có vai trò kỹ thuật gì?",
+            opts: [
+                "A. Bảo vệ ty van không bị đất đá chôn vùi và tạo khoảng trống luồn cây khóa van xuống đóng mở từ mặt đất.",
+                "B. Làm tăng thẩm mỹ cho mặt đường nhựa.",
+                "C. Thay thế cho cấu trúc bệ đỡ bê tông dưới đáy van."
+            ],
+            correct: 0,
+            exp: "Hộp van giúp cách ly ty van với đất đá xung quanh, công nhân chỉ cần mở nắp hộp là tra được chìa khóa vào ty van để điều tiết."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Để ngăn chặn dòng nước chảy ngược từ trong nhà khách hàng vào mạng lưới cấp nước chung khi xảy ra sự cố tụt áp, cụm đồng hồ trang bị loại van nào?",
+            opts: [
+                "A. Van cổng đóng mở bằng đồng.",
+                "B. Van một chiều (Check Valve).",
+                "C. Van phao tự động."
+            ],
+            correct: 1,
+            exp: "Van một chiều chỉ cho nước chảy theo hướng đi vào nhà dân, chặn đứng dòng chảy ngược bảo vệ mạng lưới không bị nhiễm bẩn."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Vật liệu lấp hào đào xung quanh thân ống nhựa được Sổ tay kỹ thuật thi công quy định bắt buộc sử dụng là gì?",
+            opts: [
+                "A. Đất hộc, đá tảng đào lên đập sơ qua rồi đổ vào.",
+                "B. Sử dụng cát sạch hoặc đất mịn sàng lọc, không chứa sỏi đá lớn đầm nén kỹ xung quanh hông ống.",
+                "C. Xà bần băm nhỏ trộn lẫn bùn."
+            ],
+            correct: 1,
+            exp: "Cát đầm kỹ xung quanh hông ống giúp cố định vị trí, chống xê dịch thân ống và phân phối đều áp lực nén bên trên truyền xuống."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Khi thợ thi công tiến hành đấu nối tê, cút nhánh đúc sẵn vào tuyến ống chính HDPE đang có nước áp lực cao, giải pháp cô lập vùng là:",
+            opts: [
+                "A. Đập vỡ ống cũ để đấu nối nhanh.",
+                "B. Xác định sơ đồ tuyến, đóng các van chặn thượng nguồn/hạ lưu liên quan, mở van xả cặn xả hết nước tồn rồi mới thi công cắt đấu nối.",
+                "C. Cứ cắt ống trực tiếp dưới áp lực nước đang chảy."
+            ],
+            correct: 1,
+            exp: "Cô lập van chặn chuẩn xác giúp khu vực thi công khô ráo, bảo đảm chất lượng mối nối hàn nhiệt và an toàn cho thợ."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Thiết bị 'Van chặn góc' tích hợp vòi xả lắp ngay sau đồng hồ nước của cụm khách hàng phục vụ nghiệp vụ gì của nhân viên kỹ thuật?",
+            opts: [
+                "A. Để khách hàng lấy nước miễn phí tại hố đồng hồ.",
+                "B. Dùng để đo đạc kiểm tra áp lực thực tế tại vòi hoặc súc xả cặn cục bộ khi gắn đồng hồ mới.",
+                "C. Phục vụ cho việc niêm phong kẹp chì đồng hồ."
+            ],
+            correct: 1,
+            exp: "Vòi xả sau van giúp nhân viên đo áp, kiểm tra tính chạy/ngừng của đồng hồ tại hiện trường khi khách hàng thắc mắc áp yếu."
+        },
+        {
+            cat: "Công tác mạng lưới đường ống",
+            q: "Quy định bàn giao mặt bằng giao thông sau thi công đào đường lắp ống yêu cầu đơn vị thi công phải thực hiện:",
+            opts: [
+                "A. Chỉ cần lấp đất bằng mặt đường cũ là xong.",
+                "B. Đầm nén nền đường đạt độ chặt quy định k95/k98, tái lập mặt nhựa hoặc bê tông chuẩn đúng nguyên trạng ban đầu.",
+                "C. Đổ đá cấp phối lên rồi để người dân tự đi cho chặt."
+            ],
+            correct: 1,
+            exp: "Tái lập hoàn trả mặt đường đúng nguyên trạng bảo đảm an toàn giao thông đô thị và giữ gìn uy tín thương hiệu doanh nghiệp BWACO."
+        },
+
+        // ==========================================
+        // KHỐI 4: DỊCH VỤ KHÁCH HÀNG BWACO (30 CÂU)
+        // ==========================================
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Thời gian quy định chuẩn từ khi nhận đầy đủ hồ sơ đề nghị hợp lệ đến khi lắp đặt đồng hồ nước hoàn thành cho khách hàng thông thường là bao lâu?",
+            opts: [
+                "A. Trong vòng 15 ngày làm việc (trừ trường hợp đặc biệt phải xin giấy phép đào đường/vỉa hè của cơ quan quản lý).",
+                "B. Ngay lập tức trong vòng 24 giờ kể cả ngày lễ.",
+                "C. Không có thời hạn quy định cụ thể."
+            ],
+            correct: 0,
+            exp: "BWACO cam kết xử lý lắp đặt trong 15 ngày. Nếu cần xin phép đào lộ giới của nhà nước thì thời gian sẽ kéo dài thêm theo quy định."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khách hàng thắc mắc gia đình đã tách hộ khẩu riêng biệt nhưng vẫn ở chung một số nhà, tại sao không được gắn thêm đồng hồ nước mới?",
+            opts: [
+                "A. Do nhân viên xí nghiệp gây khó khăn.",
+                "B. Theo quy định quản lý, mỗi một số nhà/thửa đất hợp pháp thông thường chỉ gắn 1 đồng hồ nước. Khi nào xây tách nhà riêng biệt có số nhà riêng mới đủ điều kiện gắn mới.",
+                "C. Do công ty thiếu vật tư đồng hồ đo nước."
+            ],
+            correct: 1,
+            exp: "Quy định cấp nước hiện hành khống chế 1 số nhà gắn 1 đồng hồ để tránh tranh chấp và quản lý đồng bộ hạ tầng mạng lưới."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Vì sao công ty quy định chỉ miễn phí chi phí lắp đặt cụm đồng hồ nước trong phạm vi chiều dài đường ống tối đa là 10 mét?",
+            opts: [
+                "A. Để tăng nguồn thu ngoài định mức của công ty.",
+                "B. Theo Nghị định 117/2007/NĐ-CP, chi phí lắp đặt hạch toán vào giá nước với khoảng cách tối đa 10m từ ống chính. Phần vượt quá 10m khách hàng phải thanh toán vật tư phát sinh.",
+                "C. Do độ dài cuộn ống HDPE đúc sẵn chỉ dài 10m."
+            ],
+            correct: 1,
+            exp: "Đây là quy định pháp lý của nhà nước về cấu trúc hạch toán giá nước sạch, phần ống dài vượt định mức 10m thuộc đầu tư riêng của hộ dân."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khi mở vòi nước máy xả ra thấy xuất hiện màu đục trắng như nước vo gạo nhưng để trong ca một vài phút nước lại trong suốt trở lại, nhân viên giải thích ra sao?",
+            opts: [
+                "A. Nước bị nhiễm tạp chất độc hại từ nhà máy xử lý.",
+                "B. Do sự cố sửa ống gần đó làm không khí lọt vào lòng ống, khi mở van nước áp lực cao hòa tan không khí tạo bọt khí li ti trắng sữa, bọt bay hết nước sẽ trong lại bình thường.",
+                "C. Nước chứa lượng phèn sắt chưa lắng hết."
+            ],
+            correct: 1,
+            exp: "Bọt khí hòa tan tạo màu đục tạm thời, hiện tượng vật lý hoàn toàn tự nhiên không ảnh hưởng đến chất lượng tiêu chuẩn nước sạch."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khách hàng khiếu nại bể chứa nước sinh hoạt gia đình xây ngoài trời xuất hiện nhiều rêu xanh bám thành bể. Nhân viên giải đáp thế nào?",
+            opts: [
+                "A. Do nước máy của công ty chứa sẵn mầm rêu xanh.",
+                "B. Nước máy có Clo khử trùng bảo vệ, khi đổ vào bể chứa Clo sẽ bay hơi dần. Nếu bể không che đậy kín, ánh sáng mặt trời chiếu vào sẽ kích thích bào tử tảo rêu phát triển.",
+                "C. Do chất lượng nước không đạt tiêu chuẩn Bộ Y tế."
+            ],
+            correct: 1,
+            exp: "Ánh sáng mặt trời cộng với việc Clo bay hơi hết trong bể chứa hở là nguyên nhân chính tạo điều kiện cho rêu xanh quang hợp phát triển."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Người dân phản ánh: 'Khi mở vòi nước thấy có rác, cọng cỏ hoặc sỏi nhỏ rơi ra từ vòi nước máy'. Nhận định kỹ thuật nào sau đây là ĐÚNG?",
+            opts: [
+                "A. Việc này không thể xảy ra từ mạng lưới vì cụm đồng hồ luôn có lược chắn rác bảo vệ. Đề nghị khách hàng kiểm tra lại vệ sinh dụng cụ chứa (thau, xô, thùng, bể hở) của gia đình.",
+                "B. Do lưới lọc tại bể lọc nhà máy nước bị rách to béc.",
+                "C. Do cặn rác chui qua khe hở của đồng hồ đo nước."
+            ],
+            correct: 0,
+            exp: "Lược rác trước đồng hồ có khe hở cực nhỏ, sỏi rác không thể lọt qua. Rác rơi ra vòi thường do nhiễm bẩn từ bể chứa hở của nhà dân hoặc thiết bị trong nhà."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khách hàng thắc mắc tại sao nước máy cho vào bình lọc sứ mua ngoài thị trường sử dụng một thời gian thì cục sứ lọc bị bám màu vàng?",
+            opts: [
+                "A. Do nước chứa nhiều khoáng chất tự nhiên tốt cho cơ thể (như canxi, magie, sắt vết), khi qua sứ lọc tinh các khoáng chất bị giữ lại tích tụ dần làm đổi màu sứ.",
+                "B. Do nước máy bị nhiễm bùn đất nặng.",
+                "C. Bình lọc sứ phản ứng hóa học tạo màu vàng giả."
+            ],
+            correct: 0,
+            exp: "Nước đạt QCVN vẫn giữ lại hàm lượng khoáng chất tự nhiên hòa tan, lõi sứ lọc giữ lại các khoáng chất này trên bề mặt gây ngả màu vàng."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khi khách hàng phản ánh hóa đơn tiền nước tăng cao đột biến so với tháng trước mà nhu cầu sử dụng không thay đổi, bước hướng dẫn kiểm tra đầu tiên là:",
+            opts: [
+                "A. Yêu cầu khách hàng đóng tiền ngay không cần kiểm tra.",
+                "B. Hướng dẫn khách hàng khóa toàn bộ các vòi nước trong nhà rồi quan sát kim đồng hồ, nếu kim vẫn quay là có hiện tượng rò rỉ ngầm sau đồng hồ.",
+                "C. Cho người xuống tháo đồng hồ mang đi kẹp chì kiểm định luôn."
+            ],
+            correct: 1,
+            exp: "Kiểm tra kim quay khi đóng vòi là cách nhanh nhất để xác định xem hệ thống đường ống nội bộ sau đồng hồ của hộ dân có bị bể ngầm hay phao bồn cầu bị kẹt hay không."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Nếu đồng hồ nước của khách hàng bị hư hỏng, vỡ mặt kính do lỗi khách quan (không phải do cố ý đập phá), chi phí thay thế sửa chữa do ai chịu?",
+            opts: [
+                "A. Khách hàng phải mua đồng hồ mới tự lắp.",
+                "B. BWACO chịu trách nhiệm thay thế miễn phí đồng hồ đo nước cho khách hàng theo thời hạn quy định tài sản quản lý.",
+                "C. Hai bên chia đôi chi phí vật tư."
+            ],
+            correct: 1,
+            exp: "Đồng hồ đo nước là tài sản thuộc quản lý đầu tư của công ty cấp nước, hư hỏng khách quan sẽ được xí nghiệp thay thế miễn phí."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Hành vi tự ý phá niêm phong chì, đảo ngược đồng hồ hoặc câu móc nước trực tiếp trước đồng hồ đo nước của khách hàng bị xử lý như thế nào?",
+            opts: [
+                "A. Chỉ nhắc nhở rút kinh nghiệm.",
+                "B. Lập biên bản vi phạm, ngừng cấp nước lập tức, truy thu tiền nước thất thoát và chuyển hồ sơ cơ quan chức năng xử phạt hành chính theo luật định.",
+                "C. Cho phép khách hàng hợp thức hóa lượng nước đã dùng."
+            ],
+            correct: 1,
+            exp: "Tự ý can thiệp đồng hồ là hành vi gian lận ăn cắp nước sạch, bị xử lý nghiêm khắc bằng ngừng cấp nước và phạt nặng theo nghị định nhà nước."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khi nhân viên đến ghi chỉ số đồng hồ nước nhưng nhà khách hàng đóng cửa liên tục nhiều tháng, xí nghiệp giải quyết ra sao?",
+            opts: [
+                "A. Cắt ống ngắt nước luôn không thông báo.",
+                "B. Gửi thông báo đề nghị khách hàng tự báo chỉ số qua ứng dụng/Zalo hoặc tạm tính lượng nước tiêu thụ theo trung bình các tháng trước đó.",
+                "C. Ghi chỉ số bằng 0 vĩnh viễn."
+            ],
+            correct: 1,
+            exp: "Phương án tạm tính lượng nước trung bình giúp duy trì hóa đơn và nhắc nhở hộ dân liên lạc phối hợp kiểm tra chỉ số thực tế."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khách hàng nuôi cá cảnh thắc mắc tại sao lấy nước máy châm trực tiếp vào hồ kính thì cá bị chết. Nhân viên giải thích thế nào?",
+            opts: [
+                "A. Vì trong nước máy chứa Clo khử trùng. Muốn nuôi cá an toàn, cần xả nước ra xô chậu để ngoài trời 24-48 giờ cho bay hết khí Clo mới thả cá vào.",
+                "B. Vì nước máy thiếu chất hữu cơ cung cấp cho cá.",
+                "C. Nước sạch nhà máy làm cá bị ngạt oxy."
+            ],
+            correct: 0,
+            exp: "Clo dư bảo vệ nước sạch nhưng gây kích ứng mang cá cảnh, cần phơi nước ngoài không khí để Clo tự giải phóng hoàn toàn."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Thủ tục đăng ký định mức nước sinh hoạt giá ưu đãi cho người thuê nhà (công nhân, sinh viên) tại BWACO yêu cầu giấy tờ gì?",
+            opts: [
+                "A. Bắt buộc phải có sổ đỏ đất chính chủ.",
+                "B. Hợp đồng thuê nhà hợp pháp, căn cước công dân và giấy xác nhận tạm trú của công an địa phương.",
+                "C. Chỉ cần thẻ sinh viên hoặc thẻ công nhân."
+            ],
+            correct: 1,
+            exp: "Giấy tạm trú và hợp đồng thuê nhà là căn cứ pháp lý để BWACO cấp định mức nước đúng đối tượng, bảo đảm quyền lợi an sinh xã hội."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khi nhận được phản ánh của khách hàng về việc áp lực nước đột ngột bị yếu hẳn đi vào các giờ cao điểm, nhân viên dịch vụ khách hàng cần phối hợp bộ phận nào xử lý?",
+            opts: [
+                "A. Phối hợp với Đội Quản lý mạng lưới đường ống để kiểm tra van chặn khu vực hoặc dò tìm rò rỉ, xúc xả ống.",
+                "B. Chỉ báo cho phòng kế toán theo dõi hóa đơn.",
+                "C. Yêu cầu khách hàng tự lắp bơm tăng áp trực tiếp vào mạng chính."
+            ],
+            correct: 0,
+            exp: "Phối hợp thợ mạng lưới giúp kiểm tra xem van phân vùng DMA có bị khép bớt hay có sự cố bể ống ngầm làm sụt áp khu vực hay không."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Hình thức thanh toán tiền nước nào dưới đây được BWACO khuyến khích khách hàng sử dụng để hướng tới chuyển đổi số?",
+            opts: [
+                "A. Chờ nhân viên đến thu tiền mặt tại nhà vào giờ hành chính.",
+                "B. Thanh toán không dùng tiền mặt qua ứng dụng ngân hàng, ví điện tử (ZaloPay, MoMo), trích nợ tự động.",
+                "C. Đến trực tiếp trụ sở công ty xếp hàng nộp tiền."
+            ],
+            correct: 1,
+            exp: "Thanh toán điện tử giúp khách hàng tiết kiệm thời gian, giao dịch an toàn và tối ưu hóa bộ máy quản lý số của BWACO."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khi có lịch tạm ngừng cấp nước để sửa chữa đấu nối tuyến ống chính, BWACO thông báo đến khách hàng bằng kênh thông tin nào?",
+            opts: [
+                "A. Không cần thông báo, khi nào sửa xong tự mở lại.",
+                "B. Thông báo trước qua tin nhắn SMS/Zalo OA đến số điện thoại khách hàng đăng ký, website công ty và đài truyền thanh địa phương.",
+                "C. Cho nhân viên đi gõ cửa từng nhà để thông báo bằng miệng."
+            ],
+            correct: 1,
+            exp: "Thông báo đa kênh trước thời gian cúp nước giúp người dân và các cơ sở sản xuất chủ động tích trữ nước, hạn chế xáo trộn sinh hoạt."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khách hàng thắc mắc tại sao vị trí lắp đặt đồng hồ nước lại đặt phía ngoài vỉa hè hoặc sát hàng rào chứ không đặt sâu trong sân nhà?",
+            opts: [
+                "A. Để nhân viên công ty dễ quản lý, ghi chỉ số, kiểm tra định kỳ mà không cần vào không gian riêng tư và tránh tranh chấp ranh giới.",
+                "B. Do quy định phong thủy của công ty.",
+                "C. Đặt bên ngoài để đồng hồ nhanh bị hỏng hơn."
+            ],
+            correct: 0,
+            exp: "Vị trí ranh giới công cộng giúp công tác đọc số nước hàng tháng diễn ra minh bạch, thuận tiện và không làm phiền sinh hoạt của hộ dân."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Nếu khách hàng chậm đóng tiền nước quá thời hạn ghi trên thông báo nhắc nhở mà không có lý do chính đáng, xí nghiệp xử lý thế nào?",
+            opts: [
+                "A. Gửi thông báo ngắt nước, sau thời hạn quy định nếu vẫn không nộp sẽ tiến hành tạm ngừng cấp nước (khóa van/niêm phong đồng hồ).",
+                "B. Đến tịch thu cụm đồng hồ nước ngay.",
+                "C. Bỏ qua và tiếp tục cấp nước miễn phí."
+            ],
+            correct: 0,
+            exp: "Ngừng cấp nước tuân theo quy trình pháp lý sau khi đã phát thông báo nhắc nợ đầy đủ, bảo đảm công bằng nghĩa vụ hợp đồng mua bán nước."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khi khách hàng nộp đơn khiếu nại cho rằng đồng hồ nước chạy nhanh hơn thực tế, giải pháp giải quyết minh bạch nhất của BWACO là gì?",
+            opts: [
+                "A. Khẳng định đồng hồ luôn đúng và bác bỏ khiếu nại.",
+                "B. Đội kỹ thuật xuống tháo đồng hồ dưới sự chứng kiến của chủ nhà, niêm phong và đưa đến trung tâm kiểm định độc lập của Nhà nước để đo thử nghiệm sai số.",
+                "C. Thay ngay đồng hồ cũ khác không cần kiểm định."
+            ],
+            correct: 1,
+            exp: "Kiểm định tại trung tâm đo lường độc lập có chứng nhận pháp lý là biện pháp phân xử khách quan, tạo dựng niềm tin tuyệt đối từ khách hàng."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Trong trường hợp kết quả kiểm định đồng hồ nước xác định sai số vượt quá giới hạn quy định (+-5%) do lỗi thiết bị, BWACO xử lý thế nào?",
+            opts: [
+                "A. Thay đồng hồ mới miễn phí và tính toán thối lại tiền nước phần sai số vượt trội cho khách hàng trong các tháng bị ảnh hưởng.",
+                "B. Yêu cầu khách hàng tự trả chi phí kiểm định.",
+                "C. Chỉ thay đồng hồ mới chứ không hoàn lại tiền nước."
+            ],
+            correct: 0,
+            exp: "BWACO cam kết chịu trách nhiệm chi trả phí kiểm định, thay mới thiết bị lỗi và hoàn trả phần tiền nước chênh lệch bảo vệ quyền lợi người dân."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Đường dây nóng Tổng đài chăm sóc khách hàng của BWACO tiếp nhận thông báo sự cố bể đường ống, mất nước trên mạng lưới hoạt động vào khung giờ nào?",
+            opts: [
+                "A. Chỉ tiếp nhận trong giờ hành chính.",
+                "B. Hoạt động liên tục 24/7 (kể cả ngày nghỉ, lễ tết) để tiếp nhận thông tin khẩn cấp cứu chữa mạng lưới.",
+                "C. Nghỉ làm việc vào hai ngày thứ Bảy và Chủ Nhật."
+            ],
+            correct: 1,
+            exp: "Tổng đài trực 24/7 bảo đảm mọi sự cố bể ống thất thoát nước được ứng cứu kịp thời, giảm thiệt hại tài sản công ty và gián đoạn cấp nước."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khi phát hiện nhân viên ghi chỉ số nước có hành vi nhũng nhiễu, đòi tiền bồi dưỡng của khách hàng, thái độ xử lý của BWACO là gì?",
+            opts: [
+                "A. Bênh vực nhân viên nội bộ.",
+                "B. Nghiêm cấm tuyệt đối, xử lý kỷ luật nghiêm khắc sa thải hoặc chuyển cơ quan chức năng tùy mức độ vi phạm theo cam kết văn hóa ứng xử công ty.",
+                "C. Coi đó là việc riêng tư giữa hai bên."
+            ],
+            correct: 1,
+            exp: "Văn hóa BWACO đề cao tính trung thực, đạo đức nghề nghiệp và sự minh bạch, không dung túng cho bất kỳ hành vi tiêu cực nào."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khách hàng muốn thay đổi thông tin tên chủ thể đứng trên hóa đơn tiền nước (do mua bán chuyển nhượng nhà), cần thực hiện thủ tục gì?",
+            opts: [
+                "A. Phải làm đơn xin gắn cụm đồng hồ nước mới từ đầu.",
+                "B. Mang CCCD và Giấy chứng nhận quyền sở hữu nhà đất (sổ hồng/sổ đỏ) hoặc hợp đồng mua bán nhà đến văn phòng giao dịch để ký lại hợp đồng.",
+                "C. Chỉ cần thông báo bằng miệng cho nhân viên thu tiền nước."
+            ],
+            correct: 1,
+            exp: "Ký lại hợp đồng mua bán nước chính chủ giúp cập nhật hồ sơ pháp lý quản lý khách hàng chính xác, tránh các tranh chấp hóa đơn sau này."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Giá biểu tính tiền nước sạch cho đối tượng sử dụng vào mục đích 'Sản xuất vật chất' hoặc 'Kinh doanh dịch vụ' khác với giá nước 'Sinh hoạt hộ gia đình' như thế nào?",
+            opts: [
+                "A. Tính bằng đúng giá nước sạch sinh hoạt.",
+                "B. Tính theo biểu giá kinh doanh/sản xuất do UBND tỉnh phê duyệt riêng, không áp dụng tính lũy tiến theo định mức nhân khẩu.",
+                "C. Được miễn phí hoàn toàn thuế VAT."
+            ],
+            correct: 1,
+            exp: "Nước dùng cho mục đích thương mại, sản xuất sinh lời áp dụng khung giá riêng của nhà nước ban hành, không tính định mức ưu đãi hộ gia đình."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khi một cơ quan, doanh nghiệp đăng ký lắp đặt tuyến ống nhánh đường kính lớn (>DN50) để phục vụ sản xuất, chi phí thiết kế, đào lộ giới do ai chi trả?",
+            opts: [
+                "A. BWACO chịu toàn bộ chi phí đầu tư.",
+                "B. Doanh nghiệp đăng ký có nhu cầu sử dụng chịu trách nhiệm chi trả toàn bộ chi phí khảo sát, thiết kế và thi công theo dự toán.",
+                "C. Nhà nước tài trợ 100% kinh phí."
+            ],
+            correct: 1,
+            exp: "Đấu nối phục vụ mục đích thương mại riêng của doanh nghiệp nằm ngoài phạm vi cấp nước an sinh xã hội, chi phí do đơn vị đề xuất chi trả."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Nhân viên BWACO khi gọi điện thoại hỗ trợ hoặc giải đáp khiếu nại của khách hàng, câu mở đầu chuẩn mực văn hóa ứng xử là gì?",
+            opts: [
+                "A. 'Alo, ai đấy, cần hỏi việc gì liên quan đến tiền nước?'",
+                "B. 'Dạ xin chào Anh/Chị, em là [Tên nhân viên] đại diện Công ty Cấp nước BWACO. Em có thể hỗ trợ gì cho Anh/Chị ạ?'",
+                "C. Nói thẳng vào nội dung nợ tiền nước không cần chào hỏi."
+            ],
+            correct: 1,
+            exp: "Lời chào trang trọng, xưng danh rõ ràng thể hiện sự tôn trọng, lịch sự và chuẩn mực tác phong văn hóa thương hiệu BWACO."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khi nước máy nhà khách hàng có hiện tượng đục đỏ do rỉ sét cục bộ sau khi hệ thống mạng lưới vừa được mở lại sau sự cố, bước xử lý tại hiện trường của nhân viên là:",
+            opts: [
+                "A. Bảo khách hàng cứ dùng nước đó để ăn uống.",
+                "B. Mở van xả góc sau đồng hồ để xả bỏ lượng nước chứa cặn rỉ sét ban đầu cho đến khi dòng nước trong vắt trở lại, kiểm tra đo Clo dư.",
+                "C. Thu tiền nước tháng đó tăng gấp đôi."
+            ],
+            correct: 1,
+            exp: "Xúc xả loại bỏ cặn bám bong tróc cục bộ trong lòng ống sục áp là nghiệp vụ kỹ thuật hiện trường bắt buộc để trả lại dòng nước sạch đạt chuẩn."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Khách hàng thắc mắc tại sao nước máy xả ra ngửi thấy có mùi nồng nhẹ giống như nước ở hồ bơi. Nhân viên giải thích thế nào?",
+            opts: [
+                "A. Nước bị nhiễm độc hóa chất hữu cơ.",
+                "B. Đó là mùi của Clo dư an toàn dùng để khử trùng, bảo vệ nước không bị tái nhiễm khuẩn khi di chuyển trên đường ống dài, hoàn toàn an toàn.",
+                "C. Nhà máy vô tình đổ nhầm hóa chất tẩy rửa vào bể chứa."
+            ],
+            correct: 1,
+            exp: "Mùi Clo chứng tỏ nước sạch đang được bảo vệ tiệt trùng an toàn tuyệt đối trước các mầm bệnh vi sinh vật trên hành trình mạng lưới phân phối."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Nếu khách hàng tự ý xây nhà, công trình kiên cố đè lên trên tuyến ống cấp nước chính hiện hữu của BWACO, hành vi này xử lý ra sao?",
+            opts: [
+                "A. Công ty cho phép giữ nguyên không can thiệp.",
+                "B. Lập biên bản vi phạm hành lang an toàn tuyến ống cấp nước, yêu cầu tháo dỡ hoàn trả mặt bằng và báo cáo chính quyền địa phương cưỡng chế.",
+                "C. Yêu cầu khách hàng nộp tiền thuê mặt bằng tuyến ống."
+            ],
+            correct: 1,
+            exp: "Xây dựng đè lên hành lang tuyến ống đe dọa an toàn CNAT, gây cản trở nghiêm trọng khi có sự cố bể ống cần đào bới sửa chữa khẩn cấp."
+        },
+        {
+            cat: "Dịch vụ khách hàng BWACO",
+            q: "Mục tiêu tối hậu trong chiến lược phát triển dịch vụ khách hàng của Công ty Cổ phần Cấp nước Bà Rịa - Vũng Tàu (BWACO) là gì?",
+            opts: [
+                "A. Mang đến sự hài lòng, an tâm tuyệt đối cho khách hàng thông qua nguồn nước sạch chất lượng và dịch vụ tận tâm, chuyên nghiệp.",
+                "B. Tăng giá nước liên tục hàng năm để tối đa hóa lợi nhuận.",
+                "C. Giảm bớt số lượng nhân viên kỹ thuật hiện trường để tiết kiệm quỹ lương."
+            ],
+            correct: 0,
+            exp: "Sự an tâm của cộng đồng và sự hài lòng của khách hàng chính là thước đo giá trị cao quý nhất cho sự thành công bền vững của BWACO."
+        }
+    ];
+
+    // Tạo bản sao mảng để làm việc xoay vòng khi bỏ qua câu hỏi
+    let currentQuestions = [...questions];
+    let currentIndex = 0;
+    let score = 0;
+    let totalTime = 120 * 60; // 120 phút = 7200 giây
+    let timerId = null;
+    let isPaused = false;
+    let isAnswered = false;
+
+    // Lấy DOM Elements
+    const qNumberEl = document.getElementById("q-number");
+    const qCategoryEl = document.getElementById("q-category");
+    const timerDisplayEl = document.getElementById("timer-display");
+    const progressLineEl = document.getElementById("progress-line");
+    const questionTargetEl = document.getElementById("question-target");
+    const optionsTargetEl = document.getElementById("options-target");
+    const feedbackTargetEl = document.getElementById("feedback-target");
+    const btnNextEl = document.getElementById("btn-next");
+    const btnSkipEl = document.getElementById("btn-skip");
+    const skippedBadgeEl = document.getElementById("skipped-badge");
+    const pauseScreenEl = document.getElementById("pause-screen");
+    const quizAreaEl = document.getElementById("quiz-area");
+    const resultAreaEl = document.getElementById("result-area");
+    const finalScoreEl = document.getElementById("final-score");
+    const rankDisplayEl = document.getElementById("rank-display");
+    const rankAdviceEl = document.getElementById("rank-advice");
+    const qrImageEl = document.getElementById("qr-image");
+
+    function setupQRAndTimer() {
+        // Tạo mã QR Code trỏ trực tiếp đến địa chỉ chạy ứng dụng khảo sát
+        const currentUrl = window.location.href;
+        qrImageEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(currentUrl)}`;
+        
+        // Bắt đầu đồng hồ đếm ngược
+        timerId = setInterval(() => {
+            if (!isPaused) {
+                totalTime--;
+                let mins = Math.floor(totalTime / 60);
+                let secs = totalTime % 60;
+                timerDisplayEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                if (totalTime <= 0) {
+                    clearInterval(timerId);
+                    endGame();
+                }
+            }
+        }, 1000);
+    }
+
+    function togglePause() {
+        isPaused = !isPaused;
+        pauseScreenEl.style.display = isPaused ? "flex" : "none";
+    }
+
+    function loadQuestion() {
+        isAnswered = false;
+        feedbackTargetEl.style.display = "none";
+        btnNextEl.style.display = "none";
+        btnSkipEl.style.display = "block";
+
+        if (currentIndex >= currentQuestions.length) {
+            endGame();
+            return;
+        }
+
+        // Cập nhật hiển thị số câu hỏi bị tồn đọng do bấm bỏ qua
+        let skippedDiff = currentQuestions.length - 100;
+        if(skippedDiff > 0 && currentIndex >= 100) {
+            skippedBadgeEl.innerText = `(Đang làm lại câu số ${currentIndex - 99} trong nhóm đã bỏ qua)`;
+        } else {
+            skippedBadgeEl.innerText = "";
+        }
+
+        // Khống chế hiển thị tiến trình tối đa 100 câu tiêu chuẩn
+        qNumberEl.innerText = (currentIndex + 1 > 100) ? 100 : (currentIndex + 1);
+        progressLineEl.style.width = `${Math.min(((currentIndex + 1) / 100) * 100, 100)}%`;
+
+        let currentQ = currentQuestions[currentIndex];
+        qCategoryEl.innerText = currentQ.cat;
+        questionTargetEl.innerText = `Câu hỏi khảo sát: ${currentQ.q}`;
+
+        optionsTargetEl.innerHTML = "";
+        currentQ.opts.forEach((opt, idx) => {
+            const li = document.createElement("li");
+            li.className = "option-item";
+            li.innerText = opt;
+            li.onclick = () => checkAnswer(idx, li);
+            optionsTargetEl.appendChild(li);
+        });
+    }
+
+    function checkAnswer(selectedIdx, element) {
+        if (isAnswered || isPaused) return;
+        isAnswered = true;
+        
+        // Khi đã bấm chọn đáp án thì không được bỏ qua nữa
+        btnSkipEl.style.display = "none";
+
+        let currentQ = currentQuestions[currentIndex];
+        const children = optionsTargetEl.children;
+
+        if (selectedIdx === currentQ.correct) {
+            element.classList.add("correct");
+            feedbackTargetEl.className = "feedback correct-view";
+            feedbackTargetEl.innerHTML = `✅ <strong>Chính xác!</strong> Cộng 1 điểm kiến thức chuyên môn.<br><small>💡 Ghi chú quy trình: ${currentQ.exp}</small>`;
+            score++;
+        } else {
+            element.classList.add("wrong");
+            children[currentQ.correct].classList.add("correct");
+            feedbackTargetEl.className = "feedback wrong-view";
+            feedbackTargetEl.innerHTML = `❌ <strong>Rất tiếc chưa đúng!</strong><br>👉 Đáp án đúng nhất là: <strong>${currentQ.opts[currentQ.correct]}</strong>.<br><small>💡 Chỉ dẫn nghiệp vụ: ${currentQ.exp}</small>`;
+        }
+        btnNextEl.style.display = "block";
+    }
+
+    // NÚT ĐẶC BIỆT: Bỏ qua và quay lại làm sau
+    function skipQuestion() {
+        if (isAnswered || isPaused) return;
+        
+        // Đẩy câu hỏi hiện tại xuống cuối mảng dữ liệu để xoay vòng gặp lại sau câu 100
+        let currentQ = currentQuestions[currentIndex];
+        currentQuestions.push(currentQ);
+        
+        goToNext();
+    }
+
+    function goToNext() {
+        currentIndex++;
+        loadQuestion();
+    }
+
+    function endGame() {
+        clearInterval(timerId);
+        quizAreaEl.style.display = "none";
+        resultAreaEl.style.display = "block";
+        
+        // Điểm tối đa chuẩn khống chế ở mức 100 điểm tương ứng 100 câu
+        let finalScore = score > 100 ? 100 : score;
+        finalScoreEl.innerText = `${finalScore} / 100 Điểm`;
+
+        // Thang điểm đánh giá xếp loại chi tiết 6 mức theo yêu cầu
+        if (finalScore < 30) {
+            rankDisplayEl.className = "rank-box rank-chuadat";
+            rankDisplayEl.innerText = "Chưa đạt yêu cầu";
+            rankAdviceEl.innerText = "Kết quả khảo sát quá thấp. Anh em cần chủ động đọc lại Sổ tay Kế hoạch cấp nước an toàn (CNAT), cẩm nang lắp đặt mạng lưới đường ống và bộ quy tắc trả lời khiếu nại khách hàng BWACO ngay lập tức để nâng cao tay nghề.";
+        } else if (finalScore >= 30 && finalScore <= 50) {
+            rankDisplayEl.className = "rank-box rank-ontap";
+            rankDisplayEl.innerText = "Cần ôn tập lại kiến thức";
+            rankAdviceEl.innerText = "Điểm số ở mức trung bình yếu. Anh em đã nắm được một vài khái niệm căn bản nhưng tỷ lệ sai sót thực tế còn cao, cần tăng cường ôn luyện quy trình xử lý sự cố công nghệ tại cụm nhà máy nước.";
+        } else if (finalScore > 50 && finalScore <= 70) {
+            rankDisplayEl.className = "rank-box rank-hoanthanh";
+            rankDisplayEl.innerText = "Hoàn thành bài ôn tập";
+            rankAdviceEl.innerText = "Chúc mừng bạn đã đạt mức điểm an toàn cơ sở theo quy chuẩn kỹ thuật. Đủ điều kiện nắm vững kiến thức vận hành, hãy tiếp tục duy trì tinh thần trách nhiệm trong các ca trực.";
+        } else if (finalScore > 70 && finalScore <= 80) {
+            rankDisplayEl.className = "rank-box rank-tot";
+            rankDisplayEl.innerText = "Hoàn thành tốt";
+            rankAdviceEl.innerText = "Kết quả Tốt! Kiến thức chuyên môn về mạng lưới, quy trình Jartest châm hóa chất tại xí nghiệp sản xuất và các giá trị ứng xử cốt lõi của bạn rất vững chắc.";
+        } else if (finalScore > 80 && finalScore <= 90) {
+            rankDisplayEl.className = "rank-box rank-cao";
+            rankDisplayEl.innerText = "Đạt thành tích cao";
+            rankAdviceEl.innerText = "Rất xuất sắc! Hiệu suất trả lời và xử lý tình huống nghiệp vụ khiếu nại khách hàng cực kỳ chuẩn mực, thể hiện tinh thần cống hiến chuyên nghiệp chuẩn BWACO.";
+        } else {
+            rankDisplayEl.className = "rank-box rank-xuatsac";
+            rankDisplayEl.innerText = "Hoàn thành xuất sắc";
+            rankAdviceEl.innerText = "Tuyệt vời! Bạn đã đạt số điểm tuyệt đối ở cả 4 khối kiến thức tổng hợp. Xứng đáng là hạt nhân tiêu biểu, tấm gương sáng trong phong trào nâng cao tay nghề, làm chủ công nghệ toàn công ty.";
+        }
+    }
+
+    // Khởi chạy hệ thống tự động khi trang được tải xong
+    window.onload = () => {
+        loadQuestion();
+        setupQRAndTimer();
+    };
+</script>
+</body>
+</html>

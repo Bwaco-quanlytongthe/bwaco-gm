@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BWACO - HỆ THỐNG ĐIỀU HÀNH TỔNG THỂ</title>
+    <style>
+        /* =====================================================================
+           1. THIẾT LẬP HÌNH NỀN TỔNG THỂ TOÀN DIỆN
+           ===================================================================== */
+        body {      
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f0f4f8 url('BWACO.jpg') no-repeat center center fixed !important; 
+            background-size: cover !important; 
+            min-height: 100vh; 
+            color: var(--text-dark);
+        }
+
+        /* =====================================================================
+           2. CẤU HÌNH MÀU SẮC CHUẨN BWACO & BIẾN HỆ THỐNG
+           ===================================================================== */
+        :root {
+            --primary: #1e4b8a;
+            --secondary: #3498db;
+            --accent-gold: #f1c40f;
+            --accent-green: #27ae60;
+            --accent-red: #e74c3c;
+            --text-dark: #2c3e50;
+            --glass: rgba(255, 255, 255, 0.85);
+            --border: #ddd;
+        }
+
+        * { box-sizing: border-box; transition: all 0.2s ease-in-out; }
+     
+        /* Thanh tiêu đề hệ thống */
+        .header-bar {
+            background: var(--primary); color: white; padding: 20px;
+            text-align: center; font-size: 26px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 2px;
+            border-bottom: 5px solid var(--accent-gold);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Bố cục chứa 5 cột menu */
+        .container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            padding: 20px;
+            gap: 15px;
+            max-width: 1900px;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        /* Cột menu trong suốt */
+        .column {
+            background: transparent !important;
+            padding: 5px;
+            border-radius: 20px;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* Các nút bấm Menu Tổng Thể */
+        .main-btn {
+            background: rgba(255, 255, 255, 0.95); 
+            border: 2px solid var(--primary);
+            color: var(--primary); padding: 18px 10px; border-radius: 12px;
+            text-align: center; font-weight: 900; cursor: pointer;
+            text-transform: uppercase; font-size: 16px; margin-bottom: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            min-height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-btn:hover { background: var(--primary); color: white; transform: translateY(-3px); }
+
+        /* Menu con xổ xuống */
+        .submenu {
+            display: none; background: var(--glass);
+            border-radius: 15px; padding: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Các nút nhỏ trong menu con */
+        .btn {
+            display: block; padding: 11px 15px; margin: 6px 0;
+            background: #fdfdfd; color: #444; text-decoration: none;
+            border-radius: 8px; font-size: 13px; font-weight: 700;
+            border-left: 5px solid #ddd; cursor: pointer;
+            text-align: left;
+        }
+
+        .btn:hover { background: var(--secondary); color: white; padding-left: 20px; border-left-color: var(--accent-gold); }
+        .btn.red-text { color: #c0392b; border-left-color: var(--accent-red); font-weight: 800; }
+        .btn.blue-text { color: var(--primary); border-left-color: var(--secondary); }
+
+        .nested-menu { display: none; margin-left: 10px; padding-left: 5px; border-left: 2px dashed var(--primary); }
+
+        .lake-info-sub { font-size: 11px; color: #666; font-weight: normal; font-style: italic; display: block; margin-top: 2px; }
+        
+        /* Responsive khi thu nhỏ màn hình */
+        @media (max-width: 1400px) {
+            .container { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 992px) {
+            .container { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-bar">BWACO - HỆ THỐNG ĐIỀU HÀNH TỔNG THỂ</div>
+
+<div class="container">
+
+    <!-- CỘT 1: WEB CQHC - ĐỌC BÁO -->
+    <div class="column">
+        <div class="main-btn" onclick="openMenu('B1')">WEB CƠ QUAN HC - ĐỌC BÁO</div>
+        <div class="submenu" id="B1">
+            <div class="btn blue-text" onclick="toggleNest('n_web')">1. WEB CƠ QUAN SỞ BAN NGÀNH ▾</div>
+            <div class="nested-menu" id="n_web">
+                <a href="https://hochiminhcity.gov.vn/" target="_blank" class="btn">WEB UBND TPHCM</a>
+                <a href="http://soxaydungtructuyen.hochiminhcity.gov.vn/" target="_blank" class="btn">WEBSITE SỞ XÂY DỰNG TPHCM</a>
+                <a href="https://sonnmt.hochiminhcity.gov.vn/" target="_blank" class="btn">WEBSITE SỞ NÔNG NGHIỆP & MÔI TRƯỜNG TPHCM</a>
+             </div>                    
+            <div class="btn blue-text" onclick="toggleNest('n_bao')">2. CÁC TRANG WEB ĐỌC BÁO ▾</div>
+            <div class="nested-menu" id="n_bao">
+                <a href="https://baomoi.com/" target="_blank" class="btn">Báo mới</a>
+                <a href="https://www.24h.com.vn" target="_blank" class="btn">Báo 24h.com.vn</a>
+                <a href="http://dantri.com.vn/" target="_blank" class="btn">Báo dân trí</a>
+                <a href="http://vietnamnet.vn/" target="_blank" class="btn">Báo Vietnamnet</a>
+                <a href="https://tuoitre.vn/" target="_blank" class="btn">Báo tuổi trẻ</a>
+            </div>                    
+        </div>
+    </div>
+
+    <!-- CỘT 2: QUẢN LÝ ĐIỀU HÀNH -->
+    <div class="column">
+        <div class="main-btn" onclick="openMenu('m1')">QUẢN LÝ ĐIỀU HÀNH</div>
+        <div class="submenu" id="m1">
+            <div class="btn" onclick="nav('SOTAYVH')">1. SỔ TAY VĂN HÓA DOANH NGHIỆP</div>
+            <div class="btn" onclick="nav('S-OFFICE')">2. S.OFFICE (Văn phòng số)</div>
+            <div class="btn" onclick="nav('H.RIS')">3. H.RIS (Nhân sự)</div>
+            <div class="btn" onclick="nav('KHO')">4. Quản lý Kho</div>
+            <div class="btn" onclick="msg('Tài nguyên xe')">5. Tài nguyên xe</div>
+            <div class="btn" onclick="msg('Đào tạo')">6. Tài liệu đánh giá nội bộ</div>
+            <div class="btn" onclick="msg('Tài sản văn phòng')">7. Tài sản thiết bị văn phòng</div>
+            <div class="btn blue-text" onclick="toggleNest('n1')">8. SỔ TAY CẤP NƯỚC AN TOÀN ▾</div>
+            <div class="nested-menu" id="n1">
+                <div class="btn" onclick="nav('CNAT-DADEN')">8.1. Sổ tay CNAT Đá Đen</div>
+                <div class="btn" onclick="nav('CNAT-NGAIGIAO')">8.2. Sổ tay CNAT Ngãi Giao</div>
+                <div class="btn" onclick="nav('CNAT-PHUOCBUU')">8.3. Sổ tay CNAT Phước Bửu</div>
+                <div class="btn" onclick="nav('CNAT-BINHCHAU')">8.4. Sổ tay CNAT Bình Châu</div>
+            </div>
+            <div class="btn" onclick="nav('LỊCH TRỰC')">9. Lịch trực Lễ, Tết</div>
+            <div class="btn" onclick="nav('WEB BWACO')">10. WEB SITE BWACO.VN</div>
+            <div class="btn" onclick="nav('BWS')">11. BWACO JOINT STOCK (BWS)</div>
+            <div class="btn red-text" onclick="nav('GEMINI')">12. AI (GEMINI AI)</div>
+            <div class="btn red-text" onclick="nav('EXAM')">13. KHẢO SÁT KIẾN THỨC TỔNG HỢP BWACO</div>
+            <a href="https://wheelofnames.com/vi/" target="_blank" class="btn">14. GAME NGẪU NHIÊN</a>
+        </div>
+    </div>
+
+    <!-- CỘT 3: NƯỚC NGUỒN - NHÀ MÁY - SẢN XUẤT -->
+    <div class="column">
+        <div class="main-btn" onclick="openMenu('m2')">NƯỚC NGUỒN - NHÀ MÁY</div>
+        <div class="submenu" id="m2">
+            <div class="btn" onclick="nav('DDSR')">1. Giám sát hồ Đá Đen - Sông Ray</div>
+            <div class="btn" onclick="nav('KL')">2. Giám sát hồ Kim Long</div>
+            <div class="btn" onclick="nav('XM')">3. Giám sát hồ Bà Tô XM</div>
+            <div class="btn" onclick="nav('NƯỚC THÔ')">4. Khối lượng nước thô</div>
+            <div class="btn" onclick="nav('NƯỚC SX')">5. Khối lượng nước sản xuất</div>
+            <div class="btn" onclick="msg('TT Trực Đá Đen')">6. TT Trực điều độ Đá Đen</div>
+            <div class="btn" onclick="msg('TT Trực XM-CĐ')">7. TT Trực điều độ XM-CĐ</div>
+            <div class="btn" onclick="msg('Báo cáo SX')">8. Báo cáo số liệu sản xuất</div>
+            <div class="btn" onclick="msg('Năng lượng')">9. Năng lượng phục vụ SX</div>
+            <div class="btn blue-text" onclick="toggleNest('n2')">10.MMTB Nhà máy & Bảo trì - Bảo Dưỡng▾</div>
+            <div class="nested-menu" id="n2">
+                <div class="btn" onclick="nav('NMDD')">10.1. Nhà máy Đá Đen</div>
+                <div class="btn" onclick="nav('NMNGAIGIAO')">10.2. Nhà máy Ngãi Giao</div>
+                <div class="btn" onclick="nav('NMPHUOCBUU')">10.3. Nhà máy Phước Bửu</div>
+                <div class="btn" onclick="nav('NMBINHCHAU')">10.4. Nhà máy Bình Châu</div>
+            </div>
+            <div class="btn blue-text" onclick="toggleNest('n3')">11. THAM KHẢO CỐT NƯỚC CÁC HỒ CHỨA ▾</div>
+            <div class="nested-menu" id="n3">
+                <div class="btn" onclick="nav('COTHODD')">11.1. Cốt nước Hồ Đá Đen</div>
+                <div class="btn" onclick="nav('COTHOKL')">11.2. Cốt nước hồ Kim Long</div>
+                <div class="btn" onclick="nav('COTHOXM')">11.3. Cốt nước hồ Bà Tô</div>
+            </div>  
+        </div>
+    </div>
+
+    <!-- CỘT 4: CÔNG TÁC MẠNG LƯỚI -->
+    <div class="column">
+        <div class="main-btn" onclick="openMenu('m3')">CÔNG TÁC MẠNG LƯỚI</div>
+        <div class="submenu" id="m3">
+            <div class="btn" onclick="nav('PHÂN PHỐI')">1. Nước phân phối</div>
+            <div class="btn" onclick="nav('THƯƠNG PHẨM')">2. Nước thương phẩm</div>
+            <div class="btn" onclick="nav('THẤT THOÁT')">3. Tỷ lệ thất thoát</div>
+            <div class="btn" onclick="nav('NUOCSUCXA')">4. Tính toán KL nước súc xả</div>
+            <div class="btn" onclick="nav('GIS')">5. BWACO GIS (Geographic Information System)</div>
+            <div class="btn red-text" onclick="toggleNest('n4')">6. DATALOGER (CELLO) ▾</div>
+            <div class="nested-menu" id="n4">
+                <div class="btn" onclick="nav('CELLODADEN')">6.1. NM Đá Đen</div>
+                <div class="btn" onclick="nav('CELLOVUNGTAU')">6.2. Vũng Tàu</div>
+                <div class="btn" onclick="nav('CELLOBARIA')">6.3. Bà Rịa</div>
+                <div class="btn" onclick="nav('CELLOLONGDIEN')">6.4. Long Điền</div>
+                <div class="btn" onclick="nav('CELLOCHAUDUC')">6.5. Châu Đức</div>
+                <div class="btn" onclick="nav('CELLOXUYENMOC')">6.6. Xuyên Mộc</div>
+            </div>
+            <div class="btn blue-text" onclick="toggleNest('n5')">7. DANH MỤC THIẾT BỊ MẠNG LƯỚI ▾</div>
+            <div class="nested-menu" id="n5">
+                <div class="btn" onclick="nav('MANGVT')">7.1. Vũng Tàu</div>
+                <div class="btn" onclick="nav('MANGBR')">7.2. Bà Rịa</div>
+                <div class="btn" onclick="nav('MANGLD')">7.3. Long Điền</div>
+                <div class="btn" onclick="nav('MANGCD')">7.4. Châu Đức</div>
+                <div class="btn" onclick="nav('MANGXM')">7.5. Xuyên Mộc</div>
+            </div>
+            <div class="btn" onclick="nav('CHẤT LƯỢNG NƯỚC ML')">8. Chất lượng nước mạng lưới</div>
+            <div class="btn" onclick="nav('SÚC XẢ')">9. Súc xả tuyến ống</div>
+            <div class="btn" onclick="nav('App rò rỉ')">10. App nghe rò rỉ</div>
+        </div>
+    </div>
+
+    <!-- CỘT 5: DỊCH VỤ KHÁCH HÀNG -->
+    <div class="column">
+        <div class="main-btn" onclick="openMenu('m4')">DỊCH VỤ KHÁCH HÀNG</div>
+        <div class="submenu" id="m4">
+            <div class="btn" onclick="nav('CRM')">1. CRM (Customer Relationship Management)</div>
+            <div class="btn" onclick="nav('SSTHANG-BWACO')">2. SS cùng kỳ nước TP theo tháng</div>
+            <div class="btn" onclick="nav('SSBWACO-10KHL')">3. SS nước TP ĐV & 10 KH lớn</div>
+            <div class="btn" onclick="nav('SSLUYKE-BWACO')">4. SS nước TP Lũy kế các đơn vị</div>
+            <div class="btn blue-text" onclick="toggleNest('m5')">5. NƯỚC TP THEO ĐƠN VỊ ▾</div>
+            <div class="nested-menu" id="m5">
+                <div class="btn" onclick="nav('SSCK')">5.1. So sánh nước TP cùng kỳ</div>
+                <div class="btn" onclick="nav('SSCK-MALKHDB')">5.2. SS cùng kỳ theo mã KHĐB</div>
+                <div class="btn" onclick="nav('MDSD-LUYKE')">5.3. SS theo mục đích SD lũy kế</div>
+            </div>
+            <div class="btn" onclick="nav('TON-TMCK')">6. THEO DÕI TỒN THU TM-CK (NV)</div>
+            <div class="btn" onclick="nav('TON-TMCKLK')">7. THEO DÕI TỒN THU TM-CK (LK)</div>
+            <div class="btn" onclick="nav('BÁO CÁO THÁNG')">8. Tổng hợp số liệu báo cáo tháng</div>
+            <div class="btn" onclick="nav('KHL')">9. Kiểm tra KH lớn tuần</div>
+            <div class="btn" onclick="msg('Quản lý Bravo')">10. Quản lý Bravo</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const URLS = {
+        'SOTAYVH': 'SOTAYVH.PDF',
+        'CNAT-DADEN': 'CNAT-DADEN.PDF',
+        'CNAT-NGAIGIAO': 'CNAT-NGAIGIAO.PDF',
+        'CNAT-PHUOCBUU': 'CNAT-PHUOCBUU.PDF',
+        'CNAT-BINHCHAU': 'CNAT-BINHCHAU.PDF',
+        'S-OFFICE': 'https://bwaco.vn', 
+        'H.RIS': 'https://nhanvien.bwaco.vn/Home/Login',
+        'KHO': 'https://phanmem.bwaco.com.vn/login.aspx?Mode=KHO', 
+        'LỊCH TRỰC': 'https://thietbi.bwaco.com.vn/Forms/NhapNoiBo/LichTruc2.aspx',
+        'WEB BWACO': 'https://www.bwaco.com.vn/', 
+        'BWS': 'https://finance.vietstock.vn/BWS-ctcp-cap-nuoc-ba-ria-vung-tau.htm',
+        'GEMINI': 'https://gemini.google.com/app',
+        'EXAM': 'MULTIPLECHOICETEST.HTML',
+
+        'DDSR': 'NUOCNGUONDD.HTML',
+        'KL': 'NUOCNGUONKL.HTML',
+        'XM': 'NUOCNGUONXM.HTML',
+        'NƯỚC THÔ': 'https://phanmem.bwaco.com.vn/QLSX_KhoiLuongNuocTho.aspx', 
+        'NƯỚC SX': 'https://phanmem.bwaco.com.vn/QLSX_KhoiLuongNuocSanXuat.aspx',
+        'NMDD': 'MMTB-DADEN.HTML', 
+        'NMNGAIGIAO': 'MMTB-NGAIGIAO.HTML',
+        'NMPHUOCBUU': 'MMTB-PHUOCBUU.HTML',
+        'NMBINHCHAU': 'MMTB-BINHCHAU.HTML',
+        'COTHODD': 'COTHODD.xlsx',
+        'COTHOKL': 'COTHOKL.xlsx',
+        'COTHOXM': 'COTHOXM.xls',
+                 
+        'MANGVT': 'TBMLMOI-VT.HTML',
+        'MANGBR': 'TBMLMOI-BR.HTML',
+        'MANGLD': 'TBMLMOI-LD.HTML',
+        'MANGCD': 'TBMLMOI-CD.HTML',
+        'MANGXM': 'TBMLMOI-XM.HTML',
+        'NUOCSUCXA': 'QSUCXA.HTML', 
+        'GIS': 'https://gis.bwaco.com.vn/', 
+        'PHÂN PHỐI': 'https://phanmem.bwaco.com.vn/QLSX_KhoiLuongDongHoDonVi.aspx',
+        'THƯƠNG PHẨM': 'https://phanmem.bwaco.com.vn/QLSX_KhoiLuongNuocThuongPham.aspx',
+        'THẤT THOÁT': 'https://thietbi.bwaco.com.vn/Login.aspx', 
+        'SÚC XẢ': 'https://kh.bwaco.com.vn/Forms/SuaChua/SucXa.aspx',
+        'CHẤT LƯỢNG NƯỚC ML': 'https://bwaco.vn/modules/DOC/document.aspx?doc_action=3&GroupId=1239',
+        'CELLODADEN': 'https://dataloger.bwaco.com.vn/',
+        'CELLOVUNGTAU': 'https://dataloger.bwaco.com.vn/Default.aspx',
+        'CELLOBARIA': 'https://dataloger.bwaco.com.vn/baria/baria.aspx',
+        'CELLOLONGDIEN': 'https://dataloger.bwaco.com.vn/longdien/longdien.aspx',
+        'CELLOCHAUDUC': 'https://dataloger.bwaco.com.vn/chauduc/chauduc.aspx',
+        'CELLOXUYENMOC': 'https://dataloger.bwaco.com.vn/xuyenmoc/xuyenmoc.aspx',
+
+        'CRM': 'https://kh.bwaco.com.vn/', 
+        'SSTHANG-BWACO': 'http://localhost:8501',
+        'SSBWACO-10KHL': 'BWACOCUNGKY.SQL',
+        'SSLUYKE-BWACO': 'BWACOLUYKE.SQL',
+        'SSCK': 'SSCK-BR.SQL',
+        'SSCK-MALKHDB': 'SSCK-MALKHDB.SQL',
+        'MDSD-LUYKE': 'MDSD-LUYKE.SQL',
+        'TON-TMCK': 'TON-TMCK.SQL',
+        'TON-TMCKLK': 'TON-TMCKLK.SQL',
+        'KHL': 'KHLONBR.SQL',
+        'BÁO CÁO THÁNG': 'https://thbc.bwaco.com.vn/',        
+    };
+
+    function openMenu(id) {
+        let menu = document.getElementById(id);
+        let isOpened = menu.style.display === 'block';
+        document.querySelectorAll('.submenu').forEach(s => s.style.display = 'none');
+        menu.style.display = isOpened ? 'none' : 'block';
+    }
+
+    function toggleNest(id) {
+        let nest = document.getElementById(id);
+        nest.style.display = nest.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function nav(key) {
+        if(URLS[key]) {
+            window.open(URLS[key], "_blank");
+        } else {
+            msg(key);
+        }
+    }
+
+    function msg(txt) {
+        alert(`HỆ THỐNG BWACO:\nĐang thực hiện kết nối đồng bộ dữ liệu liên ca nội bộ cho mục [${txt}]...`);
+    }
+</script>
+</body>
+</html>

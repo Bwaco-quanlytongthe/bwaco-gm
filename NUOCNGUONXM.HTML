@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Giám Sát Nước Nguồn Hồ Xuyên Mộc - BWACO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { background: linear-gradient(180deg, #1d3557 0%, #457b9d 100%); color: white; min-height: 100vh; }
+        .sidebar .nav-link { color: rgba(255,255,255,0.8); margin: 5px 0; border-radius: 5px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background-color: rgba(255,255,255,0.1); }
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        .card-custom:hover { transform: translateY(-2px); }
+        .status-badge { font-size: 0.85rem; padding: 6px 12px; border-radius: 20px; }
+        .metric-val { font-size: 1.8rem; font-weight: bold; color: #1d3557; }
+        .table-responsive { max-height: 480px; overflow-y: auto; }
+        .clickable-row { cursor: pointer; }
+        .clickable-row:hover { background-color: #f1faee !important; }
+        .boss-dropdown-item { padding: 8px 16px; width: 280px; }
+        .boss-dropdown-item input { cursor: pointer; }
+        .boss-dropdown-item label { cursor: pointer; width: 100%; display: block; }
+        .dropdown-menu { z-index: 1050 !important; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 sidebar p-3 d-none d-md-block">
+            <div class="text-center mb-4">
+                <i class="fa-solid fa-droplet fa-3x text-info mb-2"></i>
+                <h5 class="fw-bold text-uppercase">BWACO Xuyên Mộc</h5>
+                <small class="text-white-50">Giám Sát Hồ Xuyên Mộc</small>
+            </div>
+            <hr>
+            <ul class="nav flex-column nav-pills">
+                <li class="nav-item"><a class="nav-link active" href="#dashboard" data-bs-toggle="tab"><i class="fa-solid fa-chart-line me-2"></i>Tổng Quan</a></li>
+                <li class="nav-item"><a class="nav-link" href="#input-data" data-bs-toggle="tab"><i class="fa-solid fa-pen-to-square me-2"></i>Nhập Cốt Hằng Ngày</a></li>
+                <li class="nav-item"><a class="nav-link" href="#hydrology-table" data-bs-toggle="tab"><i class="fa-solid fa-table me-2"></i>Bảng Tra cốt(mét) & Trữ Lượng</a></li>
+            </ul>
+        </div>
+
+        <div class="col-md-9 col-lg-10 ms-sm-auto p-4">
+            <div class="tab-content">
+                
+                <div class="tab-pane fade show active" id="dashboard">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <div>
+                            <h1 class="h2 text-dark fw-bold mb-1">Giám sát Nguồn Nước Hệ Thống Hồ Xuyên Mộc</h1>
+                            <div class="text-secondary fs-5 fw-semibold mt-1">
+                                <i class="fa-solid fa-industry me-2 text-danger"></i>Công suất khai thác nước nguồn (nước thô) 10.000m³/ngày
+                            </div>
+                        </div>
+                        
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="dropdown">
+                                <button class="btn btn-success dropdown-toggle fw-bold shadow-sm" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                                    <i class="fa-solid fa-user-check me-1"></i> Chọn Sếp Nhận BC
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-success p-2" aria-labelledby="dropdownMenuButton" id="boss-dropdown-menu">
+                                    </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <div class="card card-custom p-3 bg-white border-start border-warning border-4" style="min-height: 125px;">
+                                <div class="text-muted small uppercase fw-bold">Nguồn bổ cấp tự nhiên cục bộ</div>
+                                <div class="mt-2 d-flex gap-4">
+                                    <span class="fw-bold text-dark"><i class="fa-solid fa-cloud-showers-heavy text-info me-2"></i>Lưu vực Suối hở tự nhiên</span>
+                                </div>
+                                <small class="text-muted d-block mt-2"><i class="fa-solid fa-circle-exclamation me-1 text-secondary"></i>Hệ thống hồ chứa độc lập - Chẩn đoán tích nước theo chu kỳ mùa mưa</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="card card-custom p-3 bg-white border-start border-primary border-4" style="min-height: 125px;">
+                                <div class="text-muted small uppercase fw-bold">Cốt Hồ Xuyên Mộc hiện tại</div>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <span class="metric-val" id="lbl-xuyen-moc">- m</span>
+                                    <span class="badge bg-success status-badge" id="status-xuyen-moc">An Toàn</span>
+                                </div>
+                                <div class="text-muted small mt-1">Dung tích chứa thực tế: <span id="lbl-volume-xuyen-moc" class="fw-bold text-primary">-</span> m³</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <div class="card card-custom p-4 bg-white">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="fw-bold text-primary mb-0"><i class="fa-solid fa-magnifying-glass-chart me-2"></i>Bảng phân tích Biến Động Thủy Văn</h5>
+                                    <span class="badge bg-primary fs-6 px-3" id="evaluated-date-tag">Chọn ngày dưới nhật ký</span>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-7 border-end">
+                                        <h6 class="fw-bold text-navy mb-2"><i class="fa-solid fa-arrow-compare me-1"></i> Biến động cao trình hồ chứa:</h6>
+                                        <div id="system-diagnostic-text" class="text-muted bg-light p-3 rounded mb-3" style="min-height: 160px; font-size: 0.95rem; line-height: 1.6;">
+                                            Bấm vào dòng bất kỳ trong bảng Nhật ký bên tab "Nhập Cốt Hằng Ngày" để xem phân tích biến động lòng hồ Xuyên Mộc.
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-file-text me-1"></i> Nội dung tin nhắn (Định dạng chuẩn hóa):</h6>
+                                        <div id="quick-assessment" class="text-dark bg-light p-3 rounded mb-3 font-monospace fw-semibold" style="min-height: 160px; white-space: pre-line; font-size: 0.92rem; line-height: 1.6; border-left: 4px solid #198754; background-color: #f9fbf9 !important;">
+                                            Nội dung tin nhắn báo cáo gửi sếp dạng danh sách sẽ tự động xuất hiện tại đây...
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-success d-flex align-items-center py-2 px-3 mb-3 card-custom border-start border-success border-4" id="selected-boss-alert" style="background-color: #edf7ed;">
+                                    <i class="fa-solid fa-bell text-success me-2 fs-5"></i>
+                                    <div class="small fw-semibold text-dark" id="selected-boss-label">
+                                        Hệ thống chưa chọn Sếp nhận báo cáo. Vui lòng tick chọn tại nút <b class="text-success">"Chọn Sếp Nhận BC"</b> ở góc phải trên.
+                                    </div>
+                                </div>
+
+                                <div class="pt-2 border-top d-flex flex-wrap gap-2 justify-content-end align-items-center">
+                                    <span class="text-muted small me-auto"><i class="fa-solid fa-circle-info"></i> Hệ thống tự động chuyển đổi định dạng tối ưu khi chuyển tiếp sang app nhắn tin</span>
+                                    <button class="btn btn-sm btn-primary px-3" onclick="shareReport('zalo')"><i class="fa-solid fa-comment-sms me-1"></i> Gửi Zalo</button>
+                                    <button class="btn btn-sm btn-info text-white px-3" onclick="shareReport('sms')"><i class="fa-solid fa-message me-1"></i> Gửi SMS</button>
+                                    <button class="btn btn-sm btn-dark px-3" onclick="shareReport('email')"><i class="fa-solid fa-envelope me-1"></i> Gửi Email</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card card-custom p-4 bg-white">
+                                <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-chart-area me-2"></i>Biểu Đồ Theo Dõi Mực Nước Hồ Xuyên Mộc</h5>
+                                <div style="position: relative; height:320px;"><canvas id="waterLevelChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="input-data">
+                    <div class="pt-3 pb-2 mb-3 border-bottom">
+                        <h2 class="fw-bold">Nhập Bản Ghi Quan Trắc Hồ Xuyên Mộc</h2>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4 mb-4">
+                            <div class="card card-custom p-4 bg-white">
+                                <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-square-plus me-2"></i>Thêm Bản Ghi Mới</h5>
+                                <form id="dataForm" onsubmit="event.preventDefault(); addDailyRecord();">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Ngày quan trắc</label>
+                                        <input type="date" id="input-date-val" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Nhân viên trực ban nhập số liệu</label>
+                                        <input type="text" id="input-operator-val" class="form-control" placeholder="Họ và tên..." required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Cốt nước thực tế Hồ Xuyên Mộc (m)</label>
+                                        <input type="number" step="0.01" min="10.00" max="23.00" id="input-xuyen-moc-val" class="form-control" placeholder="Nhập cao trình Z (Từ 10.00 m đến 22.00 m)" required oninput="previewVolume(this.value)">
+                                        <div class="form-text text-primary fw-bold" id="volume-preview">Dung tích lòng hồ tương ứng: - m³</div>
+                                    </div>
+                                    <button type="submit" id="btn-submit-form" class="btn btn-success w-100 mb-2"><i class="fa-solid fa-floppy-disk me-2"></i>Lưu Nhật Ký & Đồng Bộ Cloud</button>
+                                    <button type="button" class="btn btn-outline-primary w-100" onclick="loadSampleData()"><i class="fa-solid fa-database me-1"></i> Tải Dữ Liệu Mẫu Thử Nghiệm</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card card-custom p-4 bg-white">
+                                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                    <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-table-list me-2"></i>Nhật Ký Quan Trắc Lưu Trữ</h5>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-success btn-sm px-3" onclick="openGoogleSheets()"><i class="fa-solid fa-file-invoice me-1"></i> Xem Cơ Sở Dữ Liệu Sheets</button>
+                                        <button type="button" class="btn btn-success btn-sm px-3" onclick="exportToExcel()"><i class="fa-solid fa-file-excel me-1"></i> Xuất File Excel dự phòng</button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="clearAllData()"><i class="fa-solid fa-trash-can me-1"></i> Xóa toàn bộ</button>
+                                    </div>
+                                </div>
+                                <div class="alert alert-warning py-2 mb-2 small"><i class="fa-solid fa-circle-info me-1"></i> <b>Hướng dẫn:</b> Nhấn vào dòng lịch sử bất kỳ để kích hoạt chẩn đoán dữ liệu gửi báo cáo ngoài trang chủ.</div>
+                                <div class="table-responsive">
+                                    <table class="table table-striped align-middle text-center table-bordered">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Ngày quan trắc</th>
+                                                <th>Nhân viên trực</th>
+                                                <th>Cốt Hồ Xuyên Mộc (m)</th>
+                                                <th>Dung tích lòng hồ (m³)</th>
+                                                <th>Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dataBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="hydrology-table">
+                    <div class="pt-3 pb-2 mb-3 border-bottom">
+                        <h2 class="fw-bold">Bảng Đặc Tính Thủy Văn Hồ Xuyên Mộc ($W - Z$)</h2>
+                    </div>
+                    <div class="card card-custom p-4 bg-white table-responsive" style="max-height: 550px;">
+                        <table class="table table-bordered table-striped text-center">
+                            <thead class="table-primary text-dark sticky-top">
+                                <tr>
+                                    <th>Mực nước hồ Z (m)</th>
+                                    <th>Dung tích thiết kế W (10⁶ m³)</th>
+                                    <th>Dung tích quy đổi chuẩn (m³)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hydrologyTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ĐƯỜNG DẪN KẾT NỐI ĐẾN GOOGLE APPS SCRIPT CỦA BẠN
+    const GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz9mwHidpoFC3EZJ7M8nDjdzaUe1BnvOc0OrH_1zXSa1Nn9rcNjyZ77fSTXWv7Ro5C4/exec";
+    
+    let waterData = [];
+    let myChart = null;
+    let selectedDateForReport = '';
+    let compiledReportText = ''; 
+
+    const LIST_BOSSES = [
+        { id: 1, name: "Sếp Nguyễn Văn A - Tổng Giám Đốc", phone: "0901234567", email: "boss_giamdoc@bwaco.com" },
+        { id: 2, name: "Sếp Trần Văn B - Phó GĐ Thủy Văn", phone: "0918765432", email: "boss_phogiamdoc@bwaco.com" },
+        { id: 3, name: "Trực Ban Điều Hành Trung Tâm BWACO", phone: "02543852111", email: "trucban@bwaco.com" },
+        { id: 4, name: "Sếp Lê Văn D - Trưởng Phòng Kỹ Thuật", phone: "0933445566", email: "truongphong_kt@bwaco.com" },
+        { id: 5, name: "Sếp Phạm Văn F - Quản Lý Trạm Xuyên Mộc", phone: "0966778899", email: "quanly_xuyenmoc@bwaco.com" },
+        { id: 6, name: "Phòng QLCL", phone: "0918005324", email: "phong_nguonnuoc@bwaco.com" }
+    ];
+
+    const rawHydroData = [
+        {z: 10.00, w: 0.046}, {z: 10.10, w: 0.048}, {z: 10.20, w: 0.050}, {z: 10.30, w: 0.053}, {z: 10.40, w: 0.055}, {z: 10.50, w: 0.058}, {z: 10.60, w: 0.061}, {z: 10.70, w: 0.064}, {z: 10.80, w: 0.067}, {z: 10.90, w: 0.071},
+        {z: 11.00, w: 0.074}, {z: 11.10, w: 0.078}, {z: 11.20, w: 0.082}, {z: 11.30, w: 0.086}, {z: 11.40, w: 0.090}, {z: 11.50, w: 0.095}, {z: 11.60, w: 0.100}, {z: 11.70, w: 0.105}, {z: 11.80, w: 0.111}, {z: 11.90, w: 0.116},
+        {z: 12.00, w: 0.122}, {z: 12.10, w: 0.128}, {z: 12.20, w: 0.134}, {z: 12.30, w: 0.141}, {z: 12.40, w: 0.148}, {z: 12.50, w: 0.155}, {z: 12.60, w: 0.162}, {z: 12.70, w: 0.170}, {z: 12.80, w: 0.178}, {z: 12.90, w: 0.186},
+        {z: 13.00, w: 0.195}, {z: 13.10, w: 0.204}, {z: 13.20, w: 0.213}, {z: 13.30, w: 0.222}, {z: 13.40, w: 0.232}, {z: 13.50, w: 0.242}, {z: 13.60, w: 0.252}, {z: 13.70, w: 0.263}, {z: 13.80, w: 0.274}, {z: 13.90, w: 0.285},
+        {z: 14.00, w: 0.297}, {z: 14.10, w: 0.310}, {z: 14.20, w: 0.322}, {z: 14.30, w: 0.335}, {z: 14.40, w: 0.349}, {z: 14.50, w: 0.363}, {z: 14.60, w: 0.377}, {z: 14.70, w: 0.392}, {z: 14.80, w: 0.407}, {z: 14.90, w: 0.422},
+        {z: 15.00, w: 0.438}, {z: 15.10, w: 0.455}, {z: 15.20, w: 0.472}, {z: 15.30, w: 0.489}, {z: 15.40, w: 0.507}, {z: 15.50, w: 0.526}, {z: 15.60, w: 0.545}, {z: 15.70, w: 0.564}, {z: 15.80, w: 0.584}, {z: 15.90, w: 0.605},
+        {z: 16.00, w: 0.626}, {z: 16.10, w: 0.648}, {z: 16.20, w: 0.670}, {z: 16.30, w: 0.693}, {z: 16.40, w: 0.717}, {z: 16.50, w: 0.741}, {z: 16.60, w: 0.766}, {z: 16.70, w: 0.791}, {z: 16.80, w: 0.817}, {z: 16.90, w: 0.844},
+        {z: 17.00, w: 0.871}, {z: 17.10, w: 0.900}, {z: 17.20, w: 0.929}, {z: 17.30, w: 0.959}, {z: 17.40, w: 0.990}, {z: 17.50, w: 1.021}, {z: 17.60, w: 1.053}, {z: 17.70, w: 1.086}, {z: 17.80, w: 1.120}, {z: 17.90, w: 1.155},
+        {z: 18.00, w: 1.191}, {z: 18.10, w: 1.229}, {z: 18.20, w: 1.267}, {z: 18.30, w: 1.306}, {z: 18.40, w: 1.346}, {z: 18.50, w: 1.387}, {z: 18.60, w: 1.429}, {z: 18.70, w: 1.472}, {z: 18.80, w: 1.516}, {z: 18.90, w: 1.561},
+        {z: 19.00, w: 1.607}, {z: 19.10, w: 1.656}, {z: 19.20, w: 1.705}, {z: 19.30, w: 1.756}, {z: 19.40, w: 1.808}, {z: 19.50, w: 1.861}, {z: 19.60, w: 1.915}, {z: 19.70, w: 1.970}, {z: 19.80, w: 2.026}, {z: 19.90, w: 2.083},
+        {z: 20.00, w: 2.142}, {z: 20.10, w: 2.204}, {z: 20.20, w: 2.267}, {z: 20.30, w: 2.331}, {z: 20.40, w: 2.397}, {z: 20.50, w: 2.464}, {z: 20.60, w: 2.532}, {z: 20.70, w: 2.602}, {z: 20.80, w: 2.673}, {z: 20.90, w: 2.746},
+        {z: 21.00, w: 2.820}, {z: 21.10, w: 2.902}, {z: 21.20, w: 2.985}, {z: 21.30, w: 3.070}, {z: 21.40, w: 3.156}, {z: 21.50, w: 3.243}, {z: 21.60, w: 3.332}, {z: 21.70, w: 3.422}, {z: 21.80, w: 3.513}, {z: 21.90, w: 3.605},
+        {z: 22.00, w: 3.699}
+    ];
+
+    const historical2025Data = {
+        1: 16.50, 2: 16.55, 3: 16.58, 4: 16.60, 5: 16.62, 6: 16.65,
+        7: 16.70, 8: 16.73, 9: 16.75, 10: 16.78, 11: 16.80, 12: 16.85,
+        13: 16.90, 14: 16.92, 15: 16.95, 16: 17.00, 17: 17.05, 18: 17.10,
+        19: 17.05, 20: 17.00, 21: 16.95, 22: 16.90, 23: 16.85, 24: 16.80,
+        25: 16.75, 26: 16.70, 27: 16.65, 28: 16.60, 29: 16.55, 30: 16.50
+    };
+
+    function removeVietnameseTones(str) {
+        str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a");
+        str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ẽ/g,"e");
+        str = str.replace(/ì|í|ị|ỉ|ĩ/g,"i");
+        str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o");
+        str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u");
+        str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g,"y");
+        str = str.replace(/đ/g,"d");
+        str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+        str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ẽ/g, "E");
+        str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+        str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+        str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+        str = str.replace(/Ỳ|Ý|Y|Ỷ|Ỹ/g, "Y");
+        str = str.replace(/Đ/g, "D");
+        return str;
+    }
+
+    function lookupVolume(inputZ) {
+        let z = parseFloat(inputZ);
+        if (isNaN(z)) return 0;
+        if (z <= rawHydroData[0].z) return Math.round(rawHydroData[0].w * 1000000);
+        if (z >= rawHydroData[rawHydroData.length - 1].z) return Math.round(rawHydroData[rawHydroData.length - 1].w * 1000000);
+
+        let exactMatch = rawHydroData.find(item => Math.abs(item.z - z) < 0.0001);
+        if (exactMatch) return Math.round(exactMatch.w * 1000000);
+
+        for (let i = 0; i < rawHydroData.length - 1; i++) {
+            let p1 = rawHydroData[i];
+            let p2 = rawHydroData[i + 1];
+            if (z >= p1.z && z <= p2.z) {
+                let interpolatedW = p1.w + (z - p1.z) * (p2.w - p1.w) / (p2.z - p1.z);
+                return Math.round(interpolatedW * 1000000);
+            }
+        }
+        return 0;
+    }
+
+    function previewVolume(val) {
+        const targetPreview = document.getElementById('volume-preview');
+        if(!val) { targetPreview.innerText = "Dung tích lòng hồ tương ứng: - m³"; return; }
+        targetPreview.innerText = `Dung tích lòng hồ tương ứng: ${lookupVolume(val).toLocaleString('vi-VN')} m³`;
+    }
+
+    function buildBossDropdownMenu() {
+        const menuBody = document.getElementById('boss-dropdown-menu');
+        menuBody.innerHTML = LIST_BOSSES.map(boss => `
+            <li>
+                <div class="dropdown-item boss-dropdown-item d-flex align-items-start gap-2 py-2">
+                    <input type="checkbox" class="form-check-input mt-1 boss-checkbox" id="boss-chk-${boss.id}" value="${boss.id}" onchange="onBossSelectionChange()">
+                    <label class="form-check-label text-wrap" for="boss-chk-${boss.id}">
+                        <div class="fw-bold text-dark small">${boss.name}</div>
+                        <div class="text-muted style-phone" style="font-size: 0.75rem;"><i class="fa-solid fa-phone me-1"></i>${boss.phone}</div>
+                    </label>
+                </div>
+            </li>
+        `).join('');
+    }
+
+    function onBossSelectionChange() {
+        const checkboxes = document.querySelectorAll('.boss-checkbox:checked');
+        const selectedLabel = document.getElementById('selected-boss-label');
+        const dropdownBtn = document.getElementById('dropdownMenuButton');
+
+        if (checkboxes.length === 0) {
+            dropdownBtn.innerHTML = `<i class="fa-solid fa-user-check me-1"></i> Chọn Sếp Nhận BC`;
+            selectedLabel.innerHTML = `Hệ thống chưa chọn Sếp nhận báo cáo. Vui lòng tick chọn tại nút <b class="text-success">"Chọn Sếp Nhận BC"</b> ở góc phải trên.`;
+            return;
+        }
+
+        let selectedNames = [];
+        checkboxes.forEach(chk => {
+            const boss = LIST_BOSSES.find(b => b.id == chk.value);
+            if (boss) {
+                selectedNames.push(`<span class="text-success fw-bold">${boss.name.split(' - ')[0]}</span> (${boss.phone})`);
+            }
+        });
+
+        dropdownBtn.innerHTML = `<i class="fa-solid fa-user-check me-1"></i> Đang chọn (${checkboxes.length})`;
+        selectedLabel.innerHTML = `<i class="fa-solid fa-user-tie me-1 text-success"></i> <b>Danh sách nhận báo cáo:</b> ` + selectedNames.join(', ');
+    }
+
+    function getSelectedBossContacts() {
+        const checkboxes = document.querySelectorAll('.boss-checkbox:checked');
+        let phones = [];
+        let emails = [];
+        checkboxes.forEach(chk => {
+            const boss = LIST_BOSSES.find(b => b.id == chk.value);
+            if (boss) {
+                phones.push(boss.phone);
+                emails.push(boss.email);
+            }
+        });
+        return {
+            phoneString: phones.join(','),
+            emailString: emails.join(','),
+            count: phones.length
+        };
+    }
+
+    window.onload = function() {
+        document.getElementById('input-date-val').value = new Date().toISOString().split('T')[0];
+        buildBossDropdownMenu();
+
+        document.getElementById('hydrologyTableBody').innerHTML = rawHydroData.map(item => `
+            <tr>
+                <td class="fw-bold text-dark">${item.z.toFixed(2)} m</td>
+                <td class="text-secondary">${item.w.toFixed(3)}</td>
+                <td class="text-primary fw-bold">${Math.round(item.w * 1000000).toLocaleString('vi-VN')} m³</td>
+            </tr>
+        `).join('');
+
+        const localCache = localStorage.getItem('bwaco_hydro_xm_storage');
+        if (localCache) {
+            waterData = JSON.parse(localCache);
+            waterData.sort((a, b) => new Date(a.date) - new Date(b.date));
+        }
+        updateUI();
+    };
+
+    function evaluateRowDelta(date) {
+        selectedDateForReport = date;
+        const currentIndex = waterData.findIndex(item => item.date === date);
+        if(currentIndex === -1) return;
+
+        const current = waterData[currentIndex];
+        const currentVol = current.volume ? current.volume : lookupVolume(current.xuyenMoc);
+        
+        const d = new Date(current.date);
+        const dayOfMonth = d.getDate();
+        const formattedDate = `${String(dayOfMonth).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        document.getElementById('evaluated-date-tag').innerText = `Ngày đánh giá: ${formattedDate}`;
+
+        let diagnosticHtml = "";
+        let compareString2025 = "";
+        const targetZ_2025 = historical2025Data[dayOfMonth];
+
+        if(currentIndex > 0) {
+            const previous = waterData[currentIndex - 1];
+            const prevVol = previous.volume ? previous.volume : lookupVolume(previous.xuyenMoc);
+            const deltaZ_XM = current.xuyenMoc - previous.xuyenMoc;
+            const deltaW_XM = currentVol - prevVol;
+            const trend = deltaZ_XM > 0 ? "TĂNG ↑" : "GIẢM ↓";
+            const color = deltaZ_XM > 0 ? "text-success" : "text-danger";
+            
+            diagnosticHtml += `Cốt hồ Xuyên Mộc đạt <b>${current.xuyenMoc.toFixed(2)} m</b> (Biến động ngày <span class="${color} fw-bold">${trend} ${Math.abs(deltaZ_XM).toFixed(2)} m</span>). Trữ lượng lòng hồ thay đổi ${deltaZ_XM > 0 ? '+' : ''}${deltaW_XM.toLocaleString('vi-VN')} m³ (Tổng dung tích chứa: <b>${currentVol.toLocaleString('vi-VN')} m³</b>).`;
+        } else {
+            diagnosticHtml += `Cốt hồ Xuyên Mộc đạt <b>${current.xuyenMoc.toFixed(2)} m</b>, trữ lượng quy đổi lòng hồ đạt <b>${currentVol.toLocaleString('vi-VN')} m³</b> (Chưa có số liệu ngày hôm trước liền kề).`;
+        }
+        diagnosticHtml += `<br><br>• <b>Thuỷ văn lưu vực:</b> Hệ thống theo dõi mực nước tự nhiên phụ thuộc hoàn toàn vào chu kỳ dòng chảy nước mưa bổ cấp đầu nguồn.`;
+
+        if(targetZ_2025) {
+            const targetW_2025 = lookupVolume(targetZ_2025);
+            const compareDeltaZ = current.xuyenMoc - targetZ_2025;
+            const compareDeltaW = currentVol - targetW_2025;
+            
+            const trendKeyword = compareDeltaZ >= 0 ? "cao hơn +" : "thấp hơn -";
+            const trendVolKeyword = compareDeltaW >= 0 ? "dư" : "hụt";
+
+            compareString2025 = `${trendKeyword}${Math.abs(compareDeltaZ).toFixed(2)}m, ${trendVolKeyword} ${Math.abs(compareDeltaW).toLocaleString('vi-VN')}m³`;
+        } else {
+            compareString2025 = "Chưa có dữ liệu cùng kỳ";
+        }
+
+        document.getElementById('system-diagnostic-text').innerHTML = diagnosticHtml;
+
+        let displayReportText = `- Vị trí kiểm tra: Hồ Xuyên Mộc\n`;
+        displayReportText += `- Ngày báo cáo: ${formattedDate}\n`;
+        displayReportText += `- Cốt kiểm tra: ${current.xuyenMoc.toFixed(2)}m, dung tích tương ứng: ${currentVol.toLocaleString('vi-VN')}m³\n`;
+        displayReportText += `- So cùng kỳ 2025: ${compareString2025}\n`;
+        displayReportText += `- Người báo cáo: ${current.operator}`;
+
+        document.getElementById('quick-assessment').innerText = displayReportText;
+        compiledReportText = displayReportText; 
+    }
+
+    function shareReport(platform) {
+        if(!selectedDateForReport) {
+            alert('Vui lòng chọn một hàng ngày quan trắc dưới Nhật Ký trước!');
+            return;
+        }
+
+        const contacts = getSelectedBossContacts();
+        if(contacts.count === 0) {
+            alert('Vui lòng mở menu xả xuống ở góc trên phải và chọn sếp nhận báo cáo!');
+            return;
+        }
+
+        let finalOutputText = compiledReportText;
+        if(platform === 'sms') {
+            finalOutputText = removeVietnameseTones(finalOutputText);
+        }
+
+        const uriEncodedText = encodeURIComponent(finalOutputText);
+
+        if(platform === 'zalo') {
+            navigator.clipboard.writeText(finalOutputText).then(() => {
+                alert(`Đã sao chép nội dung báo cáo hồ Xuyên Mộc Tiếng Việt thành công!\nHệ thống chuyển hướng sang Zalo, bạn chọn tài khoản và bấm dán (Ctrl+V) để gửi đi.`);
+                const firstPhone = contacts.phoneString.split(',')[0];
+                window.open(`https://zalo.me/${firstPhone}`, '_blank');
+            }).catch(() => { window.open('https://zalo.me', '_blank'); });
+        } 
+        else if(platform === 'sms') {
+            window.location.href = `sms:${contacts.phoneString}?body=${uriEncodedText}`;
+        } 
+        else if(platform === 'email') {
+            const subject = encodeURIComponent(`[BWACO] Báo cáo quan trắc nước nguồn hồ Xuyên Mộc ngày ${selectedDateForReport}`);
+            window.location.href = `mailto:${contacts.emailString}?subject=${subject}&body=${uriEncodedText}`;
+        }
+    }
+
+    // CHỨC NĂNG CHÍNH: LƯU LỌC & ĐỒNG BỘ ONLINE LÊN GOOGLE SHEETS
+    function addDailyRecord() {
+        const date = document.getElementById('input-date-val').value;
+        const operator = document.getElementById('input-operator-val').value.trim();
+        const xuyenMoc = parseFloat(document.getElementById('input-xuyen-moc-val').value);
+
+        if (!date || !operator || isNaN(xuyenMoc)) {
+            alert('Vui lòng điền đầy đủ và kiểm tra kỹ cao trình mực nước nhập vào!');
+            return;
+        }
+
+        const calculatedVolume = lookupVolume(xuyenMoc);
+        const d = new Date(date);
+        const formattedDateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+
+        // 1. Tạo gói dữ liệu chuẩn hóa gửi lên Cloud (trùng tên với cột tiêu đề của bạn trong ảnh)
+        const payloadCloud = {
+            "tenHo": "Xuyen_Moc", // Định vị chính xác vào Tab Hồ Xuyên Mộc
+            "ngayNhap": formattedDateStr,
+            "nguoiNhap": operator,
+            "cotNuoc": xuyenMoc,
+            "ghiChu": `Dung tích quy đổi: ${calculatedVolume.toLocaleString('vi-VN')} m³`
+        };
+
+        // Trạng thái chờ xử lý mạng
+        const submitBtn = document.getElementById('btn-submit-form');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> đang đồng bộ dữ liệu...`;
+
+        // 2. Chạy lệnh Fetch đẩy dữ liệu trực tuyến qua Cổng Google Apps Script
+        fetch(GOOGLE_WEBAPP_URL, {
+            method: "POST",
+            mode: "no-cors", // Đảm bảo không dính lỗi bảo mật chặn chéo miền (CORS)
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payloadCloud)
+        })
+        .then(() => {
+            // 3. Sau khi đẩy dữ liệu online thành công -> tiến hành cập nhật bộ nhớ offline dưới máy
+            const targetIndex = waterData.findIndex(item => item.date === date);
+            if (targetIndex !== -1) {
+                waterData[targetIndex] = { date, operator, xuyenMoc, volume: calculatedVolume };
+            } else {
+                waterData.push({ date, operator, xuyenMoc, volume: calculatedVolume });
+            }
+
+            waterData.sort((a, b) => new Date(a.date) - new Date(b.date));
+            localStorage.setItem('bwaco_hydro_xm_storage', JSON.stringify(waterData));
+
+            // Reset form nhập dữ liệu mực nước
+            document.getElementById('input-xuyen-moc-val').value = '';
+            document.getElementById('volume-preview').innerText = "Dung tích lòng hồ tương ứng: - m³";
+
+            updateUI();
+            evaluateRowDelta(date);
+            alert(`Thành công: Đã ghi nhận số liệu ngày ${formattedDateStr} và đồng bộ trực tuyến lên Google Sheets!`);
+        })
+        .catch(error => {
+            console.error("Lỗi đồng bộ:", error);
+            alert("Không thể kết nối đến máy chủ Cloud. Vui lòng kiểm tra lại đường truyền mạng!");
+        })
+        .finally(() => {
+            // Mở khóa nút bấm trở lại trạng thái ban đầu
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        });
+    }
+
+    // CHỨC NĂNG MỚI: MỞ NHANH LINK GOOGLE SHEETS ĐỂ XEM TRỰC TUYẾN
+    function openGoogleSheets() {
+        // Đường link dẫn tới file trang tính tổng của bạn
+        window.open("https://docs.google.com/spreadsheets/d/1rxTZi7oV2JZYm0rLQcGBExQVUu7YNt0RAWljbwaAI4g/edit?gid=0#gid=0", "_blank");
+    }
+
+    function deleteRecord(index, event) {
+        event.stopPropagation(); 
+        if (confirm(`Bạn muốn xóa bản ghi ngày ${waterData[index].date}?`)) {
+            waterData.splice(index, 1);
+            localStorage.setItem('bwaco_hydro_xm_storage', JSON.stringify(waterData));
+            updateUI();
+        }
+    }
+
+    function clearAllData() {
+        if (confirm('Hành động nguy hiểm: Xóa toàn bộ chuỗi số liệu lịch sử quan trắc hồ chứa Xuyên Mộc trên trình duyệt?')) {
+            waterData = [];
+            localStorage.removeItem('bwaco_hydro_xm_storage');
+            updateUI();
+        }
+    }
+
+    function updateUI() {
+        renderTable();
+        renderChart();
+        calculateMetrics();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('dataBody');
+        if (waterData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Chưa có số liệu. Vui lòng nạp dữ liệu mẫu hoặc nhập mới bản ghi.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = waterData.map((item, index) => {
+            const d = new Date(item.date);
+            const displayDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+            const vol = item.volume ? item.volume : lookupVolume(item.xuyenMoc);
+            return `
+                <tr class="clickable-row" onclick="evaluateRowDelta('${item.date}')">
+                    <td><strong class="text-primary">${displayDate}</strong></td>
+                    <td><span class="text-muted small">${item.operator}</span></td>
+                    <td><span class="badge bg-light text-dark border fw-bold">${item.xuyenMoc.toFixed(2)} m</span></td>
+                    <td class="fw-bold text-success">${vol.toLocaleString('vi-VN')}</td>
+                    <td><button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteRecord(${index}, event)"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderChart() {
+        const canvas = document.getElementById('waterLevelChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (myChart) myChart.destroy();
+        if (waterData.length === 0) return;
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: waterData.map(item => { const d = new Date(item.date); return `${d.getDate()}/${d.getMonth()+1}`; }),
+                datasets: [
+                    { label: 'Cốt Cao Trình Hồ Xuyên Mộc (m)', data: waterData.map(item => item.xuyenMoc), borderColor: '#1d3557', borderWidth: 3, tension: 0.1, fill: false }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    function calculateMetrics() {
+        if (waterData.length === 0) {
+            document.getElementById('lbl-xuyen-moc').innerText = '- m';
+            document.getElementById('lbl-volume-xuyen-moc').innerText = '-';
+            return;
+        }
+        const latest = waterData[waterData.length - 1];
+        const latestVol = latest.volume ? latest.volume : lookupVolume(latest.xuyenMoc);
+
+        document.getElementById('lbl-xuyen-moc').innerText = latest.xuyenMoc.toFixed(2) + ' m';
+        document.getElementById('lbl-volume-xuyen-moc').innerText = latestVol.toLocaleString('vi-VN');
+        
+        if(!selectedDateForReport) { evaluateRowDelta(latest.date); }
+    }
+
+    function exportToExcel() {
+        if (waterData.length === 0) { alert('Không có chuỗi dữ liệu để xuất Excel!'); return; }
+        const structuredRows = waterData.map(item => {
+            const d = new Date(item.date);
+            const formattedDateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+            return {
+                "Ngày tháng": formattedDateStr,
+                "Nhân viên trực ban": item.operator || 'Hệ thống tự động',
+                "Cốt cao trình hồ chứa (m)": item.xuyenMoc,
+                "Dung tích lòng hồ quy đổi (m3)": item.volume ? item.volume : lookupVolume(item.xuyenMoc)
+            };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(structuredRows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Xuyên Mộc Lưu Trữ");
+        worksheet['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 25 }, { wch: 30 }];
+        XLSX.writeFile(workbook, "Bao_Cao_Nguon_Nuoc_Ho_Xuyen_Moc.xlsx");
+    }
+
+    function loadSampleData() {
+        waterData = [
+            { date: '2026-06-10', operator: 'Nguyễn Văn Trực XM', xuyenMoc: 16.20, volume: lookupVolume(16.20) },
+            { date: '2026-06-18', operator: 'Lê Kỹ Thuật Đội', xuyenMoc: 16.75, volume: lookupVolume(16.75) },
+            { date: '2026-06-23', operator: 'Nguyễn Văn A', xuyenMoc: 11.50, volume: lookupVolume(11.50) }
+        ];
+        localStorage.setItem('bwaco_hydro_xm_storage', JSON.stringify(waterData));
+        updateUI();
+        evaluateRowDelta(waterData[waterData.length-1].date);
+        alert('Đã nạp chuỗi số liệu mẫu thử nghiệm tiếng Việt hoàn chỉnh!');
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
