@@ -24,13 +24,13 @@
         .boss-dropdown-item input { cursor: pointer; }
         .boss-dropdown-item label { cursor: pointer; width: 100%; display: block; }
         .dropdown-menu { z-index: 1050 !important; }
+        .bg-navy { background-color: #1e3c72; color: white; }
     </style>
 </head>
 <body>
 
 <div class="container-fluid">
     <div class="row">
-        <!-- SIDEBAR -->
         <div class="col-md-3 col-lg-2 sidebar p-3 d-none d-md-block">
             <div class="text-center mb-4">
                 <i class="fa-solid fa-droplet fa-3x text-info mb-2"></i>
@@ -41,15 +41,13 @@
             <ul class="nav flex-column nav-pills">
                 <li class="nav-item"><a class="nav-link active" href="#dashboard" data-bs-toggle="tab"><i class="fa-solid fa-chart-line me-2"></i>Tổng Quan</a></li>
                 <li class="nav-item"><a class="nav-link" href="#input-data" data-bs-toggle="tab"><i class="fa-solid fa-pen-to-square me-2"></i>Nhập Cốt Hằng Ngày</a></li>
-                <li class="nav-item"><a class="nav-link" href="#hydrology-table" data-bs-toggle="tab"><i class="fa-solid fa-table me-2"></i>Bảng tra cốt (mét) & Trữ Lượng</a></li>
+                <li class="nav-item"><a class="nav-link" href="#hydrology-table" data-bs-toggle="tab"><i class="fa-solid fa-table me-2"></i>Bảng tra cốt & Trữ Lượng</a></li>
             </ul>
         </div>
 
-        <!-- MAIN CONTENT -->
         <div class="col-md-9 col-lg-10 ms-sm-auto p-4">
             <div class="tab-content">
                 
-                <!-- TAB 1: TỔNG QUAN -->
                 <div class="tab-pane fade show active" id="dashboard">
                     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                         <div>
@@ -59,20 +57,17 @@
                             </div>
                         </div>
                         
-                        <!-- MENU DROPDOWN CHỌN SẾP -->
                         <div class="btn-toolbar mb-2 mb-md-0">
                             <div class="dropdown">
                                 <button class="btn btn-success dropdown-toggle fw-bold shadow-sm" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                                     <i class="fa-solid fa-user-check me-1"></i> Chọn Sếp Nhận BC
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow border-success p-2" aria-labelledby="dropdownMenuButton" id="boss-dropdown-menu">
-                                    <!-- Render động từ Javascript -->
-                                </ul>
+                                    </ul>
                             </div>
                         </div>
                     </div>
 
-                    <!-- THẺ ĐO LƯỜNG NHANH -->
                     <div class="row g-3 mb-4">
                         <div class="col-12 col-sm-6 col-xl-4">
                             <div class="card card-custom p-3 bg-white border-start border-info border-4">
@@ -106,7 +101,6 @@
                         </div>
                     </div>
 
-                    <!-- BẢNG CHẨN ĐOÁN GỬI SẾP -->
                     <div class="row g-3 mb-4">
                         <div class="col-12">
                             <div class="card card-custom p-4 bg-white">
@@ -117,20 +111,19 @@
                                 
                                 <div class="row">
                                     <div class="col-md-7 border-end">
-                                        <h6 class="fw-bold text-navy mb-2"><i class="fa-solid fa-arrow-compare me-1"></i> Phân tích biến động liên hồ chứa:</h6>
+                                        <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-code-compare me-1"></i> Phân tích biến động liên hồ chứa:</h6>
                                         <div id="system-diagnostic-text" class="text-muted bg-light p-3 rounded mb-3" style="min-height: 160px; font-size: 0.95rem; line-height: 1.6;">
                                             Bấm vào dòng bất kỳ trong bảng Nhật ký bên tab "Nhập Cốt Hằng Ngày" để xem phân tích biến động liên hồ chứa Đá Đen - Sông Ray.
                                         </div>
                                     </div>
                                     <div class="col-md-5">
-                                        <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-file-text me-1"></i> Nội dung tin nhắn (Định dạng tiếng Việt):</h6>
+                                        <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-file-lines me-1"></i> Nội dung tin nhắn (Định dạng tiếng Việt):</h6>
                                         <div id="quick-assessment" class="text-dark bg-light p-3 rounded mb-3 font-monospace fw-semibold" style="min-height: 160px; white-space: pre-line; font-size: 0.92rem; line-height: 1.6; border-left: 4px solid #198754; background-color: #f9fbf9 !important;">
                                             Nội dung tin nhắn báo cáo gửi sếp dạng danh sách có dấu sẽ tự động xuất hiện tại đây...
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- DANH SÁCH CÁC TÊN SẾP CẦN GỬI BÁO CÁO -->
                                 <div class="alert alert-success d-flex align-items-center py-2 px-3 mb-3 card-custom border-start border-success border-4" id="selected-boss-alert" style="background-color: #edf7ed;">
                                     <i class="fa-solid fa-bell text-success me-2 fs-5"></i>
                                     <div class="small fw-semibold text-dark" id="selected-boss-label">
@@ -139,7 +132,7 @@
                                 </div>
 
                                 <div class="pt-2 border-top d-flex flex-wrap gap-2 justify-content-end align-items-center">
-                                    <span class="text-muted small me-auto"><i class="fa-solid fa-circle-info"></i> Hệ thống tự động cấu trúc nội dung tối ưu khi gửi chuyển tiếp sang app</span>
+                                    <span class="text-muted small me-auto"><i class="fa-solid fa-circle-info"></i> Hệ thống tự động lưu LocalStorage lập tức và đồng bộ ngầm Cloud không gây đợi mạng.</span>
                                     <button class="btn btn-sm btn-primary px-3" onclick="shareReport('zalo')"><i class="fa-solid fa-comment-sms me-1"></i> Gửi Zalo</button>
                                     <button class="btn btn-sm btn-info text-white px-3" onclick="shareReport('sms')"><i class="fa-solid fa-message me-1"></i> Gửi SMS</button>
                                     <button class="btn btn-sm btn-dark px-3" onclick="shareReport('email')"><i class="fa-solid fa-envelope me-1"></i> Gửi Email</button>
@@ -148,7 +141,6 @@
                         </div>
                     </div>
 
-                    <!-- BIỂU ĐỒ -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card card-custom p-4 bg-white">
@@ -159,7 +151,6 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: NHẬP SỐ LIỆU & NHẬT KÝ -->
                 <div class="tab-pane fade" id="input-data">
                     <div class="pt-3 pb-2 mb-3 border-bottom">
                         <h2 class="fw-bold">Nhập Dữ Liệu Quan Trắc Định Kỳ & Nhật Ký Số Liệu</h2>
@@ -168,7 +159,10 @@
                     <div class="row">
                         <div class="col-lg-4 mb-4">
                             <div class="card card-custom p-4 bg-white">
-                                <h5 class="fw-bold mb-3 text-primary"><i class="fa-solid fa-square-plus me-2"></i>Thêm Bản Ghi Mới</h5>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="fw-bold text-primary mb-0"><i class="fa-solid fa-square-plus me-2"></i>Thêm Bản Ghi Mới</h5>
+                                    <span id="sync-badge" class="badge bg-success p-1"><i class="fa-solid fa-cloud"></i> Sẵn sàng</span>
+                                </div>
                                 <form id="dataForm" onsubmit="event.preventDefault(); addDailyRecord();">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">Ngày quan trắc</label>
@@ -191,7 +185,7 @@
                                         <input type="number" step="0.01" min="37.00" max="46.00" id="input-da-den-val" class="form-control" placeholder="Từ 37.00 đến 46.00" required oninput="previewVolume(this.value)">
                                         <div class="form-text text-primary fw-bold" id="volume-preview">Dung tích quy đổi: - m³</div>
                                     </div>
-                                    <button type="submit" id="btn-submit-form" class="btn btn-primary w-100 mb-2"><i class="fa-solid fa-floppy-disk me-2"></i>Lưu Nhật Ký & Đồng Bộ Cloud</button>
+                                    <button type="submit" id="btn-submit-form" class="btn btn-primary w-100 mb-2"><i class="fa-solid fa-floppy-disk me-2"></i>Lưu Lập Tức & Đồng Bộ Ngầm</button>
                                     <button type="button" class="btn btn-outline-primary w-100" onclick="loadSampleData()"><i class="fa-solid fa-database me-1"></i> Tải Dữ Liệu Mẫu Kiểm Thử</button>
                                 </form>
                             </div>
@@ -200,10 +194,10 @@
                         <div class="col-lg-8">
                             <div class="card card-custom p-4 bg-white">
                                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                                    <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-table-list me-2"></i>Nhật Ký Số Liệu Lưu Trữ</h5>
+                                    <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-table-list me-2"></i>Nhật Ký Số Liệu Lưu Trữ (Local)</h5>
                                     <div class="d-flex gap-2">
-                                        <button type="button" class="btn btn-outline-success btn-sm px-3" onclick="openGoogleSheets()"><i class="fa-solid fa-file-invoice me-1"></i> Xem Cơ Sở Dữ Liệu Sheets</button>
-                                        <button type="button" class="btn btn-success btn-sm px-3" onclick="exportToExcel()"><i class="fa-solid fa-file-excel me-1"></i> Xuất File Excel dự phòng</button>
+                                        <button type="button" class="btn btn-outline-success btn-sm px-3" onclick="openGoogleSheets()"><i class="fa-solid fa-file-invoice me-1"></i> Xem CSDL Sheets</button>
+                                        <button type="button" class="btn btn-success btn-sm px-3" onclick="exportToExcel()"><i class="fa-solid fa-file-excel me-1"></i> Xuất File Excel</button>
                                         <button class="btn btn-sm btn-outline-danger" onclick="clearAllData()"><i class="fa-solid fa-trash-can me-1"></i> Xóa toàn bộ</button>
                                     </div>
                                 </div>
@@ -233,7 +227,6 @@
                     </div>
                 </div>
 
-                <!-- TAB 3: BẢNG ĐƯỜNG ĐẶC TÍNH -->
                 <div class="tab-pane fade" id="hydrology-table">
                     <div class="pt-3 pb-2 mb-3 border-bottom">
                         <h2 class="fw-bold">Bảng Đặc Tính Lòng Hồ Đá Đen ($W - Z$)</h2>
@@ -258,7 +251,7 @@
 </div>
 
 <script>
-    // ĐƯỜNG DẪN KẾT NỐI ĐẾN GOOGLE APPS SCRIPT CỦA BẠN
+    // URL KẾT NỐI ĐẾN GOOGLE APPS SCRIPT
     const GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz9mwHidpoFC3EZJ7M8nDjdzaUe1BnvOc0OrH_1zXSa1Nn9rcNjyZ77fSTXWv7Ro5C4/exec";
 
     let waterData = [];
@@ -301,7 +294,7 @@
         {z: 39.28, w: 9.55}, {z: 39.29, w: 9.55}, {z: 39.3, w: 9.56}, {z: 39.31, w: 9.59}, {z: 39.32, w: 9.61}, {z: 39.33, w: 9.64}, {z: 39.34, w: 9.66}, {z: 39.35, w: 9.69}, {z: 39.36, w: 9.71}, {z: 39.37, w: 9.74},
         {z: 39.38, w: 9.76}, {z: 39.39, w: 9.79}, {z: 39.4, w: 9.81}, {z: 39.41, w: 9.84}, {z: 39.42, w: 9.86}, {z: 39.43, w: 9.89}, {z: 39.44, w: 9.91}, {z: 39.45, w: 9.94}, {z: 39.46, w: 9.96}, {z: 39.47, w: 9.99},
         {z: 39.48, w: 10.01}, {z: 39.49, w: 10.04}, {z: 39.5, w: 10.06}, {z: 39.51, w: 10.09}, {z: 39.52, w: 10.11}, {z: 39.53, w: 10.14}, {z: 39.54, w: 10.16}, {z: 39.55, w: 10.19}, {z: 39.56, w: 10.21}, {z: 39.57, w: 10.24},
-        {z: 39.58, w: 10.27}, {z: 39.59, w: 20.29}, {z: 39.6, w: 10.32}, {z: 39.61, w: 10.35}, {z: 39.62, w: 10.37}, {z: 39.63, w: 10.40}, {z: 39.64, w: 10.42}, {z: 39.65, w: 10.45}, {z: 39.66, w: 10.48}, {z: 39.67, w: 10.50},
+        {z: 39.58, w: 10.27}, {z: 39.59, w: 10.29}, {z: 39.6, w: 10.32}, {z: 39.61, w: 10.35}, {z: 39.62, w: 10.37}, {z: 39.63, w: 10.40}, {z: 39.64, w: 10.42}, {z: 39.65, w: 10.45}, {z: 39.66, w: 10.48}, {z: 39.67, w: 10.50},
         {z: 39.68, w: 10.53}, {z: 39.69, w: 10.55}, {z: 39.7, w: 10.58}, {z: 39.71, w: 10.61}, {z: 39.72, w: 10.63}, {z: 39.73, w: 10.66}, {z: 39.74, w: 10.69}, {z: 39.75, w: 10.72}, {z: 39.76, w: 10.74}, {z: 39.77, w: 10.77},
         {z: 39.78, w: 10.80}, {z: 39.79, w: 10.82}, {z: 39.8, w: 10.85}, {z: 39.81, w: 10.88}, {z: 39.82, w: 10.90}, {z: 39.83, w: 10.93}, {z: 39.84, w: 10.95}, {z: 39.85, w: 10.98}, {z: 39.86, w: 11.01}, {z: 39.87, w: 11.03},
         {z: 39.88, w: 11.06}, {z: 39.89, w: 11.08}, {z: 39.9, w: 11.11}, {z: 39.91, w: 11.14}, {z: 39.92, w: 11.17}, {z: 39.93, w: 11.19}, {z: 39.94, w: 11.22}, {z: 39.95, w: 11.25}, {z: 39.96, w: 11.28}, {z: 39.97, w: 11.31},
@@ -467,7 +460,7 @@
             </tr>
         `).join('');
 
-        const localCache = localStorage.getItem('bwaco_hydro_v5_storage');
+        const localCache = localStorage.getItem('bwaco_hydro_da_den_storage');
         if (localCache) {
             waterData = JSON.parse(localCache);
             waterData.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -509,7 +502,7 @@
             diagnosticHtml = `Cốt hồ Đá Đen đạt <b>${current.daDen.toFixed(2)} m</b>, dung tích lòng hồ đạt <b>${currentVol.toLocaleString('vi-VN')} m³</b> (Chưa có số liệu ngày liền trước để so sánh).`;
         }
         
-        diagnosticHtml += `<br><br>• Hồ Sông Ray thượng nguồn: ${current.songRay.toFixed(2)} m.\n• Lưu lượng kênh dẫn điều tiết: ${current.kenhDan.toFixed(1)} m³/s.`;
+        diagnosticHtml += `<br><br>• Hồ Sông Ray thượng nguồn: ${current.songRay.toFixed(2)} m.<br>• Lưu lượng kênh dẫn điều tiết: ${current.kenhDan.toFixed(1)} m³/s.`;
 
         if(targetZ_2025) {
             const targetW_2025 = lookupVolume(targetZ_2025);
@@ -524,10 +517,8 @@
             compareString2025 = "Chưa có số liệu cùng kỳ";
         }
 
-        // Đổ nội dung vào ô phân tích BÊN TRÁI
         document.getElementById('system-diagnostic-text').innerHTML = diagnosticHtml;
 
-        // ĐỔ NỘI DUNG CÓ DẤU CHUẨN CHỈNH, XUỐNG DÒNG TỪNG HÀNG VÀO Ô BÊN PHẢI (GIỐNG XUYÊN MỘC & KIM LONG)
         let displayReportText = `- Vị trí kiểm tra: Hệ thống Đá Đen - Sông Ray\n`;
         displayReportText += `- Ngày báo cáo: ${formattedDate}\n`;
         displayReportText += `- Cốt hồ Đá Đen: ${current.daDen.toFixed(2)}m, dung tích: ${currentVol.toLocaleString('vi-VN')}m³\n`;
@@ -537,8 +528,6 @@
         displayReportText += `- Người báo cáo: ${current.operator}`;
 
         document.getElementById('quick-assessment').innerText = displayReportText;
-
-        // Lưu text gốc làm chuỗi dữ liệu gửi đi
         compiledReportText = displayReportText; 
     }
 
@@ -554,7 +543,6 @@
             return;
         }
 
-        // Zalo và Email giữ Tiếng Việt có dấu, SMS tự chuyển không dấu để tránh lỗi font thiết bị cũ
         let finalOutputText = compiledReportText;
         if(platform === 'sms') {
             finalOutputText = removeVietnameseTones(finalOutputText);
@@ -564,7 +552,7 @@
 
         if(platform === 'zalo') {
             navigator.clipboard.writeText(finalOutputText).then(() => {
-                alert(`Đã sao chép nội dung báo cáo hệ thống Đá Đen Tiếng Việt thành công!\nHệ thống chuyển hướng sang Zalo, bạn dán (Ctrl+V) gửi cho các sếp vừa được chọn.`);
+                alert(`Đã sao chép nội dung báo cáo hệ thống Đá Đen Tiếng Việt thành công!\nHệ thống tự động chuyển tiếp sang cửa sổ Zalo sếp đầu tiên. Bạn chỉ cần ấn phím dán (Ctrl+V) rồi bấm gửi.`);
                 const firstPhone = contacts.phoneString.split(',')[0];
                 window.open(`https://zalo.me/${firstPhone}`, '_blank');
             }).catch(() => { window.open('https://zalo.me', '_blank'); });
@@ -578,7 +566,7 @@
         }
     }
 
-    // CHỨC NĂNG CHÍNH: LƯU LỌC, KIỂM TRA CHẶN LỖI TRÙNG NGÀY & ĐỒNG BỘ CLOUD
+    // THAY ĐỔI CỐT LÕI: LƯU LOCALSTORAGE NGAY LẬP TỨC -> ĐỒNG BỘ NGẦM (BACKGROUND FETCH) LÊN GOOGLE SHEETS
     function addDailyRecord() {
         const date = document.getElementById('input-date-val').value;
         const operator = document.getElementById('input-operator-val').value.trim();
@@ -595,16 +583,38 @@
         const d = new Date(date);
         const formattedDateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 
-        // --- BƯỚC CHẶN LỖI TRÙNG NGÀY BẮT BUỘC NGAY TỪ INPUT ---
+        // Kiểm tra trùng ngày
         const targetIndex = waterData.findIndex(item => item.date === date);
         if (targetIndex !== -1) {
-            const acceptOverwrite = confirm(`⚠️ CẢNH BÁO LỖI TRÙNG NGÀY:\nNgày [ ${formattedDateStr} ] đã có số liệu do [ ${waterData[targetIndex].operator} ] nhập.\n\nBạn có chắc chắn muốn GHI ĐÈ để cập nhật lại toàn bộ số liệu không?`);
-            if (!acceptOverwrite) {
-                return; // Ngắt hàm luôn, chặn đứng không truyền qua mạng lên Google Sheets
-            }
+            const acceptOverwrite = confirm(`⚠️ CẢNH BÁO LỖI TRÙNG NGÀY:\nNgày [ ${formattedDateStr} ] đã có số liệu do [ ${waterData[targetIndex].operator} ] nhập.\n\nBạn có muốn GHI ĐÈ để cập nhật dữ liệu không?`);
+            if (!acceptOverwrite) return;
         }
 
-        // Tạo gói dữ liệu chuẩn hóa gửi lên Cloud (Tab Da_den)
+        // BƯỚC 1: CẬP NHẬT OFFLINE VÀO LOCALSTORAGE LẬP TỨC (TRẢ KẾT QUẢ CHO USER TRONG 0.1 GIÂY)
+        if (targetIndex !== -1) {
+            waterData[targetIndex] = { date, operator, daDen, volume: calculatedVolume, songRay, kenhDan };
+        } else {
+            waterData.push({ date, operator, daDen, volume: calculatedVolume, songRay, kenhDan });
+        }
+
+        waterData.sort((a, b) => new Date(a.date) - new Date(b.date));
+        localStorage.setItem('bwaco_hydro_da_den_storage', JSON.stringify(waterData));
+
+        // Cập nhật giao diện ngay lập tức
+        updateUI();
+        evaluateRowDelta(date);
+
+        // Reset form nhập dữ liệu cao trình
+        document.getElementById('input-da-den-val').value = '';
+        document.getElementById('input-song-ray-val').value = '';
+        document.getElementById('input-kenh-dan-val').value = '';
+        document.getElementById('volume-preview').innerText = "Dung tích quy đổi: - m³";
+
+        // BƯỚC 2: GỌI NGẦM ĐỒNG BỘ LÊN CLOUD (BACKGROUND SYNC)
+        const badge = document.getElementById('sync-badge');
+        badge.className = "badge bg-warning text-dark p-1";
+        badge.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang tải lên...`;
+
         const payloadCloud = {
             "tenHo": "Da_den",
             "ngayNhap": formattedDateStr,
@@ -613,13 +623,6 @@
             "ghiChu": `Sông Ray: ${songRay.toFixed(2)}m | Kênh dẫn: ${kenhDan.toFixed(1)}m³/s | Trữ lượng quy đổi: ${calculatedVolume.toLocaleString('vi-VN')}m³`
         };
 
-        // Khóa nút bấm tạo hiệu ứng loading
-        const submitBtn = document.getElementById('btn-submit-form');
-        const originalBtnText = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> đang đồng bộ dữ liệu...`;
-
-        // Đẩy dữ liệu trực tuyến qua Cổng Google Apps Script
         fetch(GOOGLE_WEBAPP_URL, {
             method: "POST",
             mode: "no-cors",
@@ -627,37 +630,20 @@
             body: JSON.stringify(payloadCloud)
         })
         .then(() => {
-            // Đồng bộ dữ liệu offline vào LocalStorage sau khi Cloud nhận thành công
-            if (targetIndex !== -1) {
-                waterData[targetIndex] = { date, operator, daDen, volume: calculatedVolume, songRay, kenhDan };
-            } else {
-                waterData.push({ date, operator, daDen, volume: calculatedVolume, songRay, kenhDan });
-            }
-
-            waterData.sort((a, b) => new Date(a.date) - new Date(b.date));
-            localStorage.setItem('bwaco_hydro_v5_storage', JSON.stringify(waterData));
-
-            // Reset các ô nhập liệu cao trình
-            document.getElementById('input-da-den-val').value = '';
-            document.getElementById('input-song-ray-val').value = '';
-            document.getElementById('input-kenh-dan-val').value = '';
-            document.getElementById('volume-preview').innerText = "Dung tích quy đổi: - m³";
-
-            updateUI();
-            evaluateRowDelta(date);
-            alert(`Thành công: Đã cập nhật số liệu ngày ${formattedDateStr} và đồng bộ trực tuyến lên hệ thống Cloud!`);
+            badge.className = "badge bg-success p-1";
+            badge.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Đã đồng bộ Sheets`;
+            setTimeout(() => {
+                badge.className = "badge bg-success p-1";
+                badge.innerHTML = `<i class="fa-solid fa-cloud"></i> Sẵn sàng`;
+            }, 3000);
         })
         .catch(error => {
-            console.error("Lỗi mạng:", error);
-            alert("Không thể truyền dữ liệu tới Cloud. Vui lòng kiểm tra lại kết nối mạng internet!");
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnText;
+            console.error("Lỗi đồng bộ mạng:", error);
+            badge.className = "badge bg-danger p-1";
+            badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Lỗi kết nối Sheets`;
         });
     }
 
-    // CHỨC NĂNG MỞ NHANH FILE TRANG TÍNH TỔNG
     function openGoogleSheets() {
         window.open("https://docs.google.com/spreadsheets/d/1rxTZi7oV2JZYm0rLQcGBExQVUu7YNt0RAWljbwaAI4g/edit?gid=0#gid=0", "_blank");
     }
@@ -666,15 +652,15 @@
         event.stopPropagation(); 
         if (confirm(`Bạn muốn xóa bản ghi ngày ${waterData[index].date}?`)) {
             waterData.splice(index, 1);
-            localStorage.setItem('bwaco_hydro_v5_storage', JSON.stringify(waterData));
+            localStorage.setItem('bwaco_hydro_da_den_storage', JSON.stringify(waterData));
             updateUI();
         }
     }
 
     function clearAllData() {
-        if (confirm('Hành động nguy hiểm: Xóa toàn bộ lịch sử quan trắc thủy văn liên hồ chứa?')) {
+        if (confirm('Hành động nguy hiểm: Xóa toàn bộ lịch sử quan trắc thủy văn liên hồ chứa trong bộ nhớ máy này?')) {
             waterData = [];
-            localStorage.removeItem('bwaco_hydro_v5_storage');
+            localStorage.removeItem('bwaco_hydro_da_den_storage');
             updateUI();
         }
     }
@@ -767,7 +753,7 @@
 
         const worksheet = XLSX.utils.json_to_sheet(structuredRows);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, workbook, "BWACO Lưu Trữ");
+        XLSX.utils.book_append_sheet(workbook, worksheet, "BWACO Lưu Trữ");
         worksheet['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 22 }, { wch: 38 }, { wch: 22 }, { wch: 25 }];
         XLSX.writeFile(workbook, "Bao_Cao_Nguon_Nuoc_Da_Den_BWACO.xlsx");
     }
@@ -778,10 +764,10 @@
             { date: '2026-06-02', operator: 'Trần Văn Trực', daDen: 40.42, volume: lookupVolume(40.42), songRay: 72.10, kenhDan: 2.0 },
             { date: '2026-06-03', operator: 'Nguyễn Bình Yên', daDen: 40.30, volume: lookupVolume(40.30), songRay: 71.85, kenhDan: 4.5 }
         ];
-        localStorage.setItem('bwaco_hydro_v5_storage', JSON.stringify(waterData));
+        localStorage.setItem('bwaco_hydro_da_den_storage', JSON.stringify(waterData));
         updateUI();
         evaluateRowDelta(waterData[waterData.length-1].date);
-        alert('Đã nạp bộ dữ liệu mẫu kiểm chứng cùng kỳ thành công!');
+        alert('Đã nạp bộ dữ liệu mẫu kiểm chứng cùng kỳ vào LocalStorage thành công!');
     }
 </script>
 
